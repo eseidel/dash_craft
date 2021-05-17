@@ -89,14 +89,17 @@ class InventoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-        itemCount: 25,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-        ),
-        itemBuilder: (BuildContext ctx, index) {
-          return ItemWell(stack: inventory.stackAt(index));
-        });
+    return AspectRatio(
+      aspectRatio: 1,
+      child: GridView.builder(
+          itemCount: 25,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+          ),
+          itemBuilder: (BuildContext ctx, index) {
+            return ItemWell(stack: inventory.stackAt(index));
+          }),
+    );
   }
 }
 
@@ -195,34 +198,56 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            flex: 1,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const <Widget>[
-                  Text('Me'),
-                  Text('Mentor'),
-                  Text('Fetch'),
-                ]),
+      body: Center(
+        child: AspectRatio(
+          aspectRatio: 3 / 4,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(flex: 1, child: Top(craftingInputs: craftingInputs)),
+              Expanded(flex: 2, child: InventoryView(inventory: inventory)),
+            ],
           ),
-          const Spacer(),
-          CraftingRow(craftingInputs: craftingInputs),
-          const Spacer(),
-          Expanded(flex: 2, child: InventoryView(inventory: inventory)),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _tryCraft,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class Top extends StatelessWidget {
+  const Top({
+    Key? key,
+    required this.craftingInputs,
+  }) : super(key: key);
+
+  final CraftingInputs craftingInputs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Expanded(
+          flex: 1,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: const <Widget>[
+                Text('Me'),
+                Text('Mentor'),
+                Text('Fetch'),
+              ]),
+        ),
+        const Spacer(),
+        CraftingRow(craftingInputs: craftingInputs),
+        const Spacer(),
+      ],
     );
   }
 }

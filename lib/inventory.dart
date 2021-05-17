@@ -43,6 +43,7 @@ class ItemContainer {
         if (toAdd.count == 0) continue;
       }
     }
+    // Items of equally reduced durability should be able to stack together.
     if (toAdd.count > 0 && _itemStacks.length < capacity) {
       _itemStacks.add(toAdd);
     }
