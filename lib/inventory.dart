@@ -6,11 +6,13 @@ class ItemType {
   // Is everything allowed to stack?
   // Are things which can't stack just 1 offs?
   int maxStackSize = 100;
-  ItemType({required this.name});
+  int energy;
+  ItemType({required this.name, this.energy = 0});
 }
 
 ItemType banana = ItemType(name: 'Banana');
 ItemType stone = ItemType(name: 'Stone');
+ItemType cookedRedMeat = ItemType(name: 'Cooked Red Meat', energy: 13);
 
 class ItemStack {
   final ItemType type;

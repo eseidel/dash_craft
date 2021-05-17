@@ -12,11 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Dash Craft',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const DashCraft(),
     );
   }
 }
@@ -61,7 +61,12 @@ class OutputWell extends StatelessWidget {
 class CraftingRow extends StatelessWidget {
   final CraftingInputs craftingInputs;
   final ItemStack? tool = null;
-  const CraftingRow({Key? key, required this.craftingInputs}) : super(key: key);
+  final VoidCallback tryCraft;
+  const CraftingRow({
+    Key? key,
+    required this.craftingInputs,
+    required this.tryCraft,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +80,11 @@ class CraftingRow extends StatelessWidget {
         Expanded(child: ToolWell(tool: tool)),
         const Spacer(),
         const Expanded(child: OutputWell()),
+        ElevatedButton.icon(
+          onPressed: tryCraft,
+          icon: const Icon(Icons.handyman),
+          label: const Text('Craft'),
+        ),
       ],
     );
   }
@@ -103,67 +113,11 @@ class InventoryView extends StatelessWidget {
   }
 }
 
-// class BasicGrid extends StatelessWidget {
-//   const BasicGrid({
-//     Key? key,
-//     required this.columnCount,
-//     required this.rowCount,
-//     required this.children,
-//     this.gap,
-//     this.padding,
-//     this.margin,
-//     this.emptyChild = const SizedBox.shrink(),
-//   })  : assert(children.length < columnCount * rowCount,
-//             'Cannot layout more children than columnCount * rowCount'),
-//         super(key: key);
-
-//   final int columnCount;
-//   final int rowCount;
-//   final List<Widget> children;
-//   final double? gap;
-//   final EdgeInsets? padding;
-//   final EdgeInsets? margin;
-//   final Widget emptyChild;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final List<Widget> widgets = [];
-
-//     final childrenLength = children.length;
-//     for (int i = 0; i < rowCount; i++) {
-//       final List<Widget> row = [];
-//       for (int x = 0; x < columnCount; x++) {
-//         final index = i * columnCount + x;
-//         if (index <= childrenLength - 1) {
-//           row.add(SizedBox(child: children[index]));
-//         } else {
-//           row.add(Expanded(child: emptyChild));
-//         }
-//         if (x != columnCount - 1) {
-//           row.add(SizedBox(width: gap));
-//         }
-//       }
-//       widgets.add(Row(children: row));
-//       if (i != rowCount - 1) {
-//         widgets.add(SizedBox(height: gap));
-//       }
-//     }
-
-//     return Container(
-//       padding: padding,
-//       margin: margin,
-//       child: Column(children: widgets),
-//     );
-//   }
-// }
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+class DashCraft extends StatefulWidget {
+  const DashCraft({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<DashCraft> createState() => _DashCraftState();
 }
 
 class CraftingInputs {
@@ -178,7 +132,7 @@ class CraftingInputs {
   ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _DashCraftState extends State<DashCraft> {
   CraftingInputs craftingInputs = CraftingInputs();
   Inventory inventory = Inventory();
 
@@ -199,34 +153,55 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: AspectRatio(
-          aspectRatio: 3 / 4,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(flex: 1, child: Top(craftingInputs: craftingInputs)),
-              Expanded(flex: 2, child: InventoryView(inventory: inventory)),
-            ],
-          ),
-        ),
+        child: GameArea(
+            craftingInputs: craftingInputs,
+            inventory: inventory,
+            tryCraft: _tryCraft),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _tryCraft,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+}
+
+class GameArea extends StatelessWidget {
+  const GameArea({
+    Key? key,
+    required this.craftingInputs,
+    required this.inventory,
+    required this.tryCraft,
+  }) : super(key: key);
+
+  final CraftingInputs craftingInputs;
+  final Inventory inventory;
+  final VoidCallback tryCraft;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Top(
+              craftingInputs: craftingInputs,
+              tryCraft: tryCraft,
+            ),
+          ),
+          Expanded(flex: 2, child: InventoryView(inventory: inventory)),
+        ],
       ),
     );
   }
 }
 
 class Top extends StatelessWidget {
-  const Top({
-    Key? key,
-    required this.craftingInputs,
-  }) : super(key: key);
+  const Top({Key? key, required this.craftingInputs, required this.tryCraft})
+      : super(key: key);
 
   final CraftingInputs craftingInputs;
+  final VoidCallback tryCraft;
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +220,7 @@ class Top extends StatelessWidget {
               ]),
         ),
         const Spacer(),
-        CraftingRow(craftingInputs: craftingInputs),
+        CraftingRow(craftingInputs: craftingInputs, tryCraft: tryCraft),
         const Spacer(),
       ],
     );
