@@ -10,6 +10,7 @@ class ItemType {
 }
 
 ItemType banana = ItemType(name: 'Banana');
+ItemType stone = ItemType(name: 'Stone');
 
 class ItemStack {
   final ItemType type;

@@ -1,3 +1,4 @@
+import 'package:dash_craft/activity.dart';
 import 'package:dash_craft/inventory.dart';
 import 'package:flutter/material.dart';
 
@@ -38,6 +39,16 @@ class ItemWell extends StatelessWidget {
   }
 }
 
+class ToolWell extends StatelessWidget {
+  final ItemStack? tool;
+  const ToolWell({Key? key, this.tool}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ItemWell(stack: tool);
+  }
+}
+
 class OutputWell extends StatelessWidget {
   const OutputWell({Key? key}) : super(key: key);
 
@@ -48,20 +59,22 @@ class OutputWell extends StatelessWidget {
 }
 
 class CraftingRow extends StatelessWidget {
-  const CraftingRow({Key? key}) : super(key: key);
+  final CraftingInputs craftingInputs;
+  final ItemStack? tool = null;
+  const CraftingRow({Key? key, required this.craftingInputs}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: const [
-        Expanded(child: ItemWell()),
-        Expanded(child: ItemWell()),
-        Expanded(child: ItemWell()),
-        Spacer(),
-        Expanded(child: ItemWell()),
-        Spacer(),
-        Expanded(child: OutputWell()),
+      children: [
+        Expanded(child: ItemWell(stack: craftingInputs.first)),
+        Expanded(child: ItemWell(stack: craftingInputs.second)),
+        Expanded(child: ItemWell(stack: craftingInputs.third)),
+        const Spacer(),
+        Expanded(child: ToolWell(tool: tool)),
+        const Spacer(),
+        const Expanded(child: OutputWell()),
       ],
     );
   }
@@ -150,7 +163,20 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class CraftingInputs {
+  late List<ItemStack> _stacks;
+
+  CraftingInputs({List<ItemStack>? stacks})
+      : assert(stacks == null || stacks.length <= 3) {
+    _stacks = stacks ?? [];
+  }
+  ItemStack? get first => _stacks.isNotEmpty ? _stacks.first : null;
+  ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
+  ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
+}
+
 class _MyHomePageState extends State<MyHomePage> {
+  CraftingInputs craftingInputs = CraftingInputs();
   Inventory inventory = Inventory();
 
   void _tryCraft() {
@@ -162,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // What do we do on failure?
     setState(() {
-      inventory.tryAdd(ItemStack(type: banana, count: 70));
+      inventory.tryAdd(fetcher.gather());
     });
   }
 
@@ -187,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ]),
           ),
           const Spacer(),
-          const CraftingRow(),
+          CraftingRow(craftingInputs: craftingInputs),
           const Spacer(),
           Expanded(flex: 2, child: InventoryView(inventory: inventory)),
         ],
