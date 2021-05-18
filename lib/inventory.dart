@@ -10,7 +10,7 @@ class ItemType {
   ItemType({required this.name, this.energy = 0});
 }
 
-ItemType banana = ItemType(name: 'Banana');
+ItemType banana = ItemType(name: 'Banana', energy: 1);
 ItemType stone = ItemType(name: 'Stone');
 ItemType cookedRedMeat = ItemType(name: 'Cooked Red Meat', energy: 13);
 
@@ -18,6 +18,8 @@ class ItemStack {
   final ItemType type;
   int count;
   ItemStack({required this.type, this.count = 1});
+
+  int get energy => type.energy * count;
 
   void takeFrom(ItemStack from) {
     if (from.type != type) {
