@@ -40,11 +40,18 @@ class ItemWell extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.0,
-      child: Container(
-        decoration: BoxDecoration(border: Border.all(width: 2)),
-        child: stack != null
-            ? DraggableItem(location: location, stack: stack!)
-            : null,
+      child: GestureDetector(
+        onTap: () {
+          ItemStack? stack = this.stack;
+          if (stack == null) return; // Still trigger any animations...
+          context.read<Game>().itemWellTap(location: location, stack: stack);
+        },
+        child: Container(
+          decoration: BoxDecoration(border: Border.all(width: 2)),
+          child: stack != null
+              ? DraggableItem(location: location, stack: stack!)
+              : null,
+        ),
       ),
     );
   }
@@ -176,6 +183,36 @@ class CraftingInputs {
   ItemStack? get first => _stacks.isNotEmpty ? _stacks.first : null;
   ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
   ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
+
+  ItemStack? stackWithMatchingType(ItemStack toAdd) {
+    for (var stack in _stacks) {
+      if (stack.type == toAdd.type) {
+        return stack;
+      }
+    }
+    return null;
+  }
+
+  bool addOneFrom(ItemStack toAdd) {
+    assert(toAdd.count > 0);
+    // Does this durability match?  Should it?
+    var existingStack = stackWithMatchingType(toAdd);
+    if (existingStack != null) {
+      var haveSpace = existingStack.haveSpaceFor(toAdd);
+      if (!haveSpace) {
+        print('Item already on table, but not enough space!');
+        return false;
+      }
+      existingStack.takeFrom(toAdd, limit: 1);
+      return true;
+    }
+    if (_stacks.length >= 3) {
+      print('crafting table already has 3 stacks!');
+      return false;
+    }
+    _stacks.add(toAdd.takeOneAsNewStack());
+    return true;
+  }
 }
 
 class Game with ChangeNotifier {
@@ -200,6 +237,18 @@ class Game with ChangeNotifier {
     int willTake = min(canTake, from.count);
     from.count -= willTake;
     to.energy += willTake * from.type.energy;
+    notifyListeners();
+  }
+
+  void itemWellTap({required ItemStack stack, required DragLocation location}) {
+    assert(stack.count > 0);
+    if (location != DragLocation.inventory) return; // Temporary.
+
+    bool success = craftingInputs.addOneFrom(stack);
+    if (!success) {
+      print('crafting table full');
+      return;
+    }
     notifyListeners();
   }
 

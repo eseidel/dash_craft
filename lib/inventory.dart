@@ -11,6 +11,7 @@ class ItemType {
 }
 
 ItemType banana = ItemType(name: 'Banana', energy: 1);
+ItemType peeledBanana = ItemType(name: 'Peeled Banana', energy: 3);
 ItemType stone = ItemType(name: 'Stone');
 ItemType cookedRedMeat = ItemType(name: 'Cooked Red Meat', energy: 13);
 
@@ -20,15 +21,29 @@ class ItemStack {
   ItemStack({required this.type, this.count = 1});
 
   int get energy => type.energy * count;
+  int get spaceLeft => type.maxStackSize - count;
 
-  void takeFrom(ItemStack from) {
+  void takeFrom(ItemStack from, {int limit = 100}) {
     if (from.type != type) {
       throw ArgumentError('Can\'t add non-matching item type.');
     }
-    int spaceLeft = type.maxStackSize - count;
-    int taking = min(from.count, spaceLeft);
+    int maxCouldTake = min(from.count, spaceLeft);
+    int taking = min(maxCouldTake, limit);
     count += taking;
     from.count -= taking;
+  }
+
+  bool haveSpaceFor(ItemStack from) {
+    if (from.type != type) return false;
+    return spaceLeft >= from.count;
+  }
+
+  // Not sure this is safe.
+  ItemStack takeOneAsNewStack() {
+    assert(count > 1);
+    count -= 1;
+    // Also copy durability!
+    return ItemStack(type: type, count: 1);
   }
 }
 
