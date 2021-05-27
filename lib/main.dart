@@ -10,12 +10,16 @@ void main() {
   runApp(const MyApp());
 }
 
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       title: 'Dash Craft',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -173,65 +177,25 @@ class DashCraft extends StatefulWidget {
   State<DashCraft> createState() => _DashCraftState();
 }
 
-class CraftingInputs {
-  late List<ItemStack> _stacks;
-
-  CraftingInputs({List<ItemStack>? stacks})
-      : assert(stacks == null || stacks.length <= 3) {
-    _stacks = stacks ?? [];
-  }
-  ItemStack? get first => _stacks.isNotEmpty ? _stacks.first : null;
-  ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
-  ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
-
-  ItemStack? stackWithMatchingType(ItemStack toAdd) {
-    for (var stack in _stacks) {
-      if (stack.type == toAdd.type) {
-        return stack;
-      }
-    }
-    return null;
-  }
-
-  bool addOneFrom(ItemStack toAdd) {
-    assert(toAdd.count > 0);
-    // Does this durability match?  Should it?
-    var existingStack = stackWithMatchingType(toAdd);
-    if (existingStack != null) {
-      var haveSpace = existingStack.haveSpaceFor(toAdd);
-      if (!haveSpace) {
-        print('Item already on table, but not enough space!');
-        return false;
-      }
-      existingStack.takeFrom(toAdd, limit: 1);
-      return true;
-    }
-    if (_stacks.length >= 3) {
-      print('crafting table already has 3 stacks!');
-      return false;
-    }
-    _stacks.add(toAdd.takeOneAsNewStack());
-    return true;
-  }
-}
-
 class Game with ChangeNotifier {
   CraftingInputs craftingInputs = CraftingInputs();
   Inventory inventory = Inventory();
+  Skills skills = Skills();
   Human me = Human();
   Human minion = Human();
+  Cookbook cookbook = Cookbook();
 
   void eatFood({required ItemStack from, required Human to}) {
     // Reject non-food items?
     if (from.energy == 0) {
-      print('no energy!');
+      showMessage("Can't eat that!");
       return;
     }
     assert(from.energy > 0); // Eventually not required.
     int missing = to.missingEnergy;
     int canTake = missing ~/ from.type.energy;
     if (canTake == 0) {
-      print('can take 0!');
+      showMessage("Can't take 0.");
       return;
     }
     int willTake = min(canTake, from.count);
@@ -246,9 +210,14 @@ class Game with ChangeNotifier {
 
     bool success = craftingInputs.addOneFrom(stack);
     if (!success) {
-      print('crafting table full');
+      showMessage('Crafting table full');
       return;
     }
+    notifyListeners();
+  }
+
+  void fetchPressed() {
+    inventory.tryAdd(fetcher.gather());
     notifyListeners();
   }
 
@@ -260,15 +229,60 @@ class Game with ChangeNotifier {
   // Inventory -> Fire -> (destroy stack, change to fuel)
   // Inventory -> Quiver/Rod -> (destroy stack, change to fuel)
 
+  double successChance(RecipeLookup recipe, Skills skills) {
+    return 0.5;
+  }
+
+  void showMessage(String message) {
+    var state = rootScaffoldMessengerKey.currentState;
+    if (state == null) {
+      // ignore: avoid_print
+      print(message);
+      return;
+    }
+    state.showSnackBar(SnackBar(
+      content: Text(message),
+      duration: const Duration(milliseconds: 500),
+    ));
+  }
+
   void craftPressed() {
     // Check if valid recipe
+    var recipeResult = cookbook.findRecipe(craftingInputs);
+    // Multipler for recipe?
+    if (recipeResult == null) {
+      showMessage('No such recipe');
+      // Is there still learning?
+      return;
+    }
+    // Check space in inventory.
+    // Check tool durability.
+    // Check tool level.
     // Learn about the recipe requirements if necessary
     // Take items
+    craftingInputs.clear();
+    // Check success percent.
+    bool successful =
+        Random().nextDouble() < successChance(recipeResult, skills);
     // If successful, add results to inventory.
-    // Refill slots if needed.
+    ItemStack? toAdd;
+    if (successful) {
+      // Handle multiple outputs.
+      toAdd = ItemStack(
+          type: recipeResult.recipe.outputs.first, count: recipeResult.count);
+    } else {
+      showMessage('Crafting failed!');
+      // Do learning
+      // If learned, show recipe on screen.
+      // If was food, give goop!
+      // Does goop come in multiples?
+      if (recipeResult.recipe.failureGivesGoop) {
+        toAdd = ItemStack(type: goop);
+      }
+    }
+    if (toAdd != null) inventory.tryAdd(toAdd);
 
-    // What do we do on failure?
-    inventory.tryAdd(fetcher.gather());
+    // Refill slots if needed.
     notifyListeners();
   }
 }
@@ -368,10 +382,19 @@ class Top extends StatelessWidget {
           flex: 1,
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const <Widget>[
-                Expanded(child: Me()),
-                Expanded(child: Text('Mentor')),
-                Expanded(child: Text('Fetch')),
+              children: <Widget>[
+                const Expanded(child: Me()),
+                const Expanded(child: Text('Mentor')),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      context.read<Game>().fetchPressed();
+                      // Message on failure?
+                    },
+                    icon: const Icon(Icons.backpack),
+                    label: const Text('Fetch'),
+                  ),
+                ),
               ]),
         ),
         const Spacer(),

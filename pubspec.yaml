@@ -26,11 +26,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   percent_indicator: ^3.0.1
   provider: ^5.0.0
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^1.0.0
+  test: ^1.16.8
 
 flutter:
 
