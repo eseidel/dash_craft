@@ -177,116 +177,6 @@ class DashCraft extends StatefulWidget {
   State<DashCraft> createState() => _DashCraftState();
 }
 
-class Game with ChangeNotifier {
-  CraftingInputs craftingInputs = CraftingInputs();
-  Inventory inventory = Inventory();
-  Skills skills = Skills();
-  Human me = Human();
-  Human minion = Human();
-  Cookbook cookbook = Cookbook();
-
-  void eatFood({required ItemStack from, required Human to}) {
-    // Reject non-food items?
-    if (from.energy == 0) {
-      showMessage("Can't eat that!");
-      return;
-    }
-    assert(from.energy > 0); // Eventually not required.
-    int missing = to.missingEnergy;
-    int canTake = missing ~/ from.type.energy;
-    if (canTake == 0) {
-      showMessage("Can't take 0.");
-      return;
-    }
-    int willTake = min(canTake, from.count);
-    from.count -= willTake;
-    to.energy += willTake * from.type.energy;
-    notifyListeners();
-  }
-
-  void itemWellTap({required ItemStack stack, required DragLocation location}) {
-    assert(stack.count > 0);
-    if (location != DragLocation.inventory) return; // Temporary.
-
-    bool success = craftingInputs.addOneFrom(stack);
-    if (!success) {
-      showMessage('Crafting table full');
-      return;
-    }
-    notifyListeners();
-  }
-
-  void fetchPressed() {
-    inventory.tryAdd(fetcher.gather());
-    notifyListeners();
-  }
-
-  // Drag types
-  // Inventory -> Human (destroy stack, change to energy)
-  // Crafting Table -> Inventory (move stack, add in position)
-  // Inventory -> Slot -> (move to slot)
-  // Inventory -> Container -> Add to list
-  // Inventory -> Fire -> (destroy stack, change to fuel)
-  // Inventory -> Quiver/Rod -> (destroy stack, change to fuel)
-
-  double successChance(RecipeLookup recipe, Skills skills) {
-    return 0.5;
-  }
-
-  void showMessage(String message) {
-    var state = rootScaffoldMessengerKey.currentState;
-    if (state == null) {
-      // ignore: avoid_print
-      print(message);
-      return;
-    }
-    state.showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(milliseconds: 500),
-    ));
-  }
-
-  void craftPressed() {
-    // Check if valid recipe
-    var recipeResult = cookbook.findRecipe(craftingInputs);
-    // Multipler for recipe?
-    if (recipeResult == null) {
-      showMessage('No such recipe');
-      // Is there still learning?
-      return;
-    }
-    // Check space in inventory.
-    // Check tool durability.
-    // Check tool level.
-    // Learn about the recipe requirements if necessary
-    // Take items
-    craftingInputs.clear();
-    // Check success percent.
-    bool successful =
-        Random().nextDouble() < successChance(recipeResult, skills);
-    // If successful, add results to inventory.
-    ItemStack? toAdd;
-    if (successful) {
-      // Handle multiple outputs.
-      toAdd = ItemStack(
-          type: recipeResult.recipe.outputs.first, count: recipeResult.count);
-    } else {
-      showMessage('Crafting failed!');
-      // Do learning
-      // If learned, show recipe on screen.
-      // If was food, give goop!
-      // Does goop come in multiples?
-      if (recipeResult.recipe.failureGivesGoop) {
-        toAdd = ItemStack(type: goop);
-      }
-    }
-    if (toAdd != null) inventory.tryAdd(toAdd);
-
-    // Refill slots if needed.
-    notifyListeners();
-  }
-}
-
 // Dead code.
 enum DragLocation {
   inventory,
@@ -315,7 +205,20 @@ class DragInfo {
 // Craft (takes from crafting table, adds to inventory, auto-fills from inventory)
 
 class _DashCraftState extends State<DashCraft> {
-  Game game = Game();
+  late Game game = Game(showMessage);
+
+  void showMessage(String message) {
+    var state = rootScaffoldMessengerKey.currentState;
+    if (state == null) {
+      // ignore: avoid_print
+      print(message);
+      return;
+    }
+    state.showSnackBar(SnackBar(
+      content: Text(message),
+      duration: const Duration(milliseconds: 500),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -332,13 +235,7 @@ class _DashCraftState extends State<DashCraft> {
   }
 }
 
-class Human {
-  static const int maxEnergy = 100;
-  int energy = 7;
-
-  int get missingEnergy => maxEnergy - energy;
-  double get energyPercent => energy / maxEnergy;
-}
+class Game {}
 
 class GameArea extends StatelessWidget {
   const GameArea({

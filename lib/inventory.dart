@@ -220,3 +220,11 @@ class Inventory extends ItemContainer {
     return null;
   }
 }
+
+class Human {
+  static const int maxEnergy = 100;
+  int energy = 7;
+
+  int get missingEnergy => maxEnergy - energy;
+  double get energyPercent => energy / maxEnergy;
+}
