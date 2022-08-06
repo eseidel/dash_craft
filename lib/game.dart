@@ -1,7 +1,10 @@
+import 'package:flutter/cupertino.dart';
+
 import 'inventory.dart';
 import 'dart:math';
+import 'items.dart';
 
-class GameState {
+class GameState extends ChangeNotifier {
   CraftingInputs craftingInputs = CraftingInputs();
   Inventory inventory = Inventory();
   Skills skills = Skills();
@@ -39,22 +42,22 @@ class GameState {
     notifyListeners();
   }
 
-  void itemWellTap({required ItemStack stack, required DragLocation location}) {
-    assert(stack.count > 0);
-    if (location != DragLocation.inventory) return; // Temporary.
+  // void itemWellTap({required ItemStack stack, required DragLocation location}) {
+  //   assert(stack.count > 0);
+  //   if (location != DragLocation.inventory) return; // Temporary.
 
-    bool success = craftingInputs.addOneFrom(stack);
-    if (!success) {
-      showMessage('Crafting table full');
-      return;
-    }
-    notifyListeners();
-  }
+  //   bool success = craftingInputs.addOneFrom(stack);
+  //   if (!success) {
+  //     showMessage('Crafting table full');
+  //     return;
+  //   }
+  //   notifyListeners();
+  // }
 
-  void fetchPressed() {
-    inventory.tryAdd(fetcher.gather());
-    notifyListeners();
-  }
+  // void fetchPressed() {
+  //   inventory.tryAdd(fetcher.gather());
+  //   notifyListeners();
+  // }
 
   // Drag types
   // Inventory -> Human (destroy stack, change to energy)

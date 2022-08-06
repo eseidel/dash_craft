@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'items.dart';
 import 'inventory.dart';
 
 class Fetcher {
