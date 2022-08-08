@@ -1,6 +1,16 @@
 # dash_craft
  Just playing around.
 
+# Building a simulator
+* Give it a goal (e.g. 100 peeled bananas)
+* Give it actions (fetch, peel, discard, eat, etc.)
+* Simulate possible actions for the actor.
+* Separate SkillState from Inventory
+* SkillState (skill levels for both me and minion)
+* RecipeBook (all available recipes)
+* Inventory (stuff we have)
+* GameState? (clicks, time, goal)?
+
 
 # Todo
 * Each location should be an location object rather than an ItemStack.  Drags just connect two locations rather than moving items.

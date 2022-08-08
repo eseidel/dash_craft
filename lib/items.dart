@@ -1,31 +1,39 @@
-// This should be yaml.
+import 'package:meta/meta.dart';
 
-enum ItemClass {
+enum ItemKind {
   food,
   tool,
 }
 
-class ItemType {
+@immutable
+class Item {
+  // name
+  // is tool
+  // max durability
+  // recipe
+  // max stack size
+  // energy (burn, eat, use?)
   final String name;
-  final ItemClass type;
+  final ItemKind kind;
   // Is everything allowed to stack?
   // Are things which can't stack just 1 offs?
-  final int maxStackSize = 100;
+  final int stackSize = 100;
   final int durability;
   final int energy;
-  const ItemType.food({required this.name, required this.energy})
+  const Item.food({required this.name, required this.energy})
       : durability = 0,
-        type = ItemClass.food;
-  const ItemType.tool({required this.name, required this.durability})
+        kind = ItemKind.food;
+  const Item.tool({required this.name, required this.durability})
       : energy = 0,
-        type = ItemClass.tool;
+        kind = ItemKind.tool;
 }
 
-const banana = ItemType.food(name: 'Banana', energy: 1);
-const goop = ItemType.food(name: 'Goop', energy: -1);
-const peeledBanana = ItemType.food(name: 'Peeled Banana', energy: 3);
-const orange = ItemType.food(name: 'Orange', energy: 1);
-const peeledOrange = ItemType.food(name: 'Peeled Orange', energy: 3);
-const stone = ItemType.tool(name: 'Stone', durability: 5);
-const walnut = ItemType.food(name: 'Walnut', energy: -2);
-const cookedRedMeat = ItemType.food(name: 'Cooked Red Meat', energy: 13);
+// This should be yaml.
+const banana = Item.food(name: 'Banana', energy: 1);
+const goop = Item.food(name: 'Goop', energy: -1);
+const peeledBanana = Item.food(name: 'Peeled Banana', energy: 3);
+const orange = Item.food(name: 'Orange', energy: 1);
+const peeledOrange = Item.food(name: 'Peeled Orange', energy: 3);
+const stone = Item.tool(name: 'Stone', durability: 5);
+const walnut = Item.food(name: 'Walnut', energy: -2);
+const cookedRedMeat = Item.food(name: 'Cooked Red Meat', energy: 13);

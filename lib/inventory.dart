@@ -1,17 +1,16 @@
 import 'dart:math';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import 'items.dart';
 
-class Skills {
-  double foodPrep = 0.0;
-}
-
+@immutable
 class Recipe {
-  final List<ItemType> inputs;
+  final List<Item> inputs;
   // Tool
   // Skill required
-  final List<ItemType> outputs;
+  // Percentage chance for a given output (e.g. eggs)
+  final List<Item> outputs;
   final bool failureGivesGoop;
   const Recipe({
     required this.inputs,
@@ -19,10 +18,10 @@ class Recipe {
     this.failureGivesGoop = false,
   });
 
-  List<ItemType> get sortedInputTypes => inputs;
+  List<Item> get sortedInputTypes => inputs;
 
   // Will need to be fixed for non-1 inputs.
-  int countOf(ItemType type) {
+  int countOf(Item type) {
     return inputs.contains(type) ? 1 : 0;
   }
 }
@@ -31,10 +30,11 @@ var recipes = const [
   Recipe(inputs: [banana], outputs: [peeledBanana], failureGivesGoop: true),
 ];
 
+@immutable
 class RecipeLookup {
   final Recipe recipe;
   final int count;
-  RecipeLookup(this.recipe, this.count);
+  const RecipeLookup(this.recipe, this.count);
 }
 
 class Cookbook {
@@ -72,6 +72,7 @@ class Cookbook {
   }
 }
 
+// Shouldn't be mutable.
 class CraftingInputs {
   late List<ItemStack> _stacks;
 
@@ -83,7 +84,7 @@ class CraftingInputs {
   ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
   ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
 
-  ItemStack? stackWithMatchingType(ItemType type) {
+  ItemStack? stackWithMatchingType(Item type) {
     for (var stack in _stacks) {
       if (stack.type == type) {
         return stack;
@@ -92,9 +93,9 @@ class CraftingInputs {
     return null;
   }
 
-  int countOf(ItemType type) => stackWithMatchingType(type)?.count ?? 0;
+  int countOf(Item type) => stackWithMatchingType(type)?.count ?? 0;
 
-  List<ItemType> get sortedTypes {
+  List<Item> get sortedTypes {
     var types = _stacks.map((stack) => stack.type).toList();
     types.sort();
     return types;
@@ -127,12 +128,12 @@ class CraftingInputs {
 }
 
 class ItemStack {
-  final ItemType type;
+  final Item type;
   int count;
   ItemStack({required this.type, this.count = 1});
 
   int get energy => type.energy * count;
-  int get spaceLeft => type.maxStackSize - count;
+  int get spaceLeft => type.stackSize - count;
 
   void takeFrom(ItemStack from, {int limit = 100}) {
     if (from.type != type) {
@@ -182,19 +183,20 @@ class ItemContainer {
   }
 }
 
-class Inventory extends ItemContainer {
-  Inventory() : super(capacity: 25);
+// class Inventory extends ItemContainer {
+//   Inventory() : super(capacity: 25);
 
-  ItemStack? stackAt(int index) {
-    if (index < _itemStacks.length) return _itemStacks[index];
-    return null;
-  }
-}
+//   ItemStack? stackAt(int index) {
+//     if (index < _itemStacks.length) return _itemStacks[index];
+//     return null;
+//   }
+// }
 
-class Human {
-  static const int maxEnergy = 100;
-  int energy = 7;
+// This probably isn't necessary? this is just two doubles on the gamestate?
+// class HumanState {
+//   static const int maxEnergy = 100;
+//   int energy = 7;
 
-  int get missingEnergy => maxEnergy - energy;
-  double get energyPercent => energy / maxEnergy;
-}
+//   int get missingEnergy => maxEnergy - energy;
+//   double get energyPercent => energy / maxEnergy;
+// }
