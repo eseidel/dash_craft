@@ -30,6 +30,37 @@ var recipes = const [
   Recipe(inputs: [banana], outputs: [peeledBanana], failureGivesGoop: true),
 ];
 
+// Peeled Banana	Banana			Hand	0	1	3
+// Peeled Orange	Orange			Hand	0	1	3
+// Walnut Kernel	Walnut			Stone	0	1	4
+// Sliced Banana	Peeled Banana			Sharp Stone	0	1	8
+// Peanut Kernel	Peanut			Hand	5	1	3
+// 2 Opened Coconut	Coconut			Stone	10	1	2
+// Raw Coconut	Opened Coconut			Sharp Stone	15	1	8
+// Mixed Berries	Blue Berry	Red Berry		Hand	15	1	5
+// Chestnut Kernel	Chestnut			Stone	15	1	4
+// Blue Berry Mash	2 Blue Berry	Coconut Shell		Stone	15	1	8
+// Red Berry Mash	2 Red Berry	Coconut Shell		Stone	15	1	8
+// Mixed Berry Mash	2 Mixed Berries	Coconut Shell		Stone	20	1	15
+// Banana Mash	2 Peeled Banana	Coconut Shell		Stone	25	1	12
+// Sliced Orange	Orange			Sharp Stone	25	1	6
+// Sliced Tomato	Tomato			Sharp Stone	30	1	8
+// Sliced Carrot	Carrot			Sharp Stone	30	1	8
+// Cut Lettuce	Lettuce			Sharp Stone	30	1	7
+// Pot Full of Water	Cooking Pot	Water Bowl x3		Hand	30
+// Sliced Eggplant	Eggplant			Sharp Stone	35		9
+// Sliced Potato	Potato			Sharp Stone	35		10
+// Carrot Salad	Sliced Carrot	Cut Lettuce	Coconut Shell	Hand	35	1	20
+// Tomato Salad	Sliced Tomato	Cut Lettuce	Coconut Shell	Hand	35	1	20
+// Walnut Salad	Walnut Kernel	Cut Lettuce	Coconut Shell	Hand	40		16
+// Mashed Potatoes	2 Potatoes	Coconut Shell		Stone	40		16
+// Mashed Root	2 Root	Coconut Shell		Stone	40		8
+// Bone Marrow	Bone			Stone Axe	45	1	7
+// Sliced Apple	Apple			Primitive Knife	50		10
+// Orange Juice	2 Peeled orange	Coconut Shell		Stone	55		12
+// Sliced Mushroom	Mushroom			Primitive Knife	55		12
+// Raw Kebab	Peeled Stick	Sliced Tomato	Red Meat	Hand	60		27
+
 @immutable
 class RecipeLookup {
   final Recipe recipe;
@@ -132,7 +163,7 @@ class ItemStack {
   int count;
   ItemStack({required this.type, this.count = 1});
 
-  int get energy => type.energy * count;
+  // int get energy => type.energy * count;
   int get spaceLeft => type.stackSize - count;
 
   void takeFrom(ItemStack from, {int limit = 100}) {
