@@ -1,9 +1,5 @@
 import 'package:flutter/cupertino.dart';
 
-import 'inventory.dart';
-import 'dart:math';
-import 'items.dart';
-
 class GameState extends ChangeNotifier {
   // CraftingInputs craftingInputs = CraftingInputs();
   // Cookbook cookbook = Cookbook();

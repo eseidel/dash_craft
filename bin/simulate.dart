@@ -1,6 +1,6 @@
 import 'package:dash_craft/items.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/planner.dart';
+import 'package:dash_craft/plan/goal.dart';
 
 // MVP
 // A thing which can simulate to peel 100 bananas

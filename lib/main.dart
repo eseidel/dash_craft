@@ -1,10 +1,5 @@
-import 'package:dash_craft/activity.dart';
 import 'package:dash_craft/inventory.dart';
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/percent_indicator.dart';
-import 'package:provider/provider.dart';
-
-import 'dart:math';
 
 void main() {
   runApp(const MyApp());

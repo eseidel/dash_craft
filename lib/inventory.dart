@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import 'items.dart';
