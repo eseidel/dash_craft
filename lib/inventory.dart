@@ -3,32 +3,97 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import 'items.dart';
+import 'game.dart';
+
+// Can Recipes unify with gather/hunt actions?
+// Would need to have a "which human can do this"
+// as well as a "which tool is needed to do this" (e.g. gather, axe, etc.)
+
+// These are effectively classes of tools?
+// enum MinionAction {
+//   gather, // hand
+//   lumberjack, // axe
+//   hunt, // weapon
+//   fish, // fishing rod
+//   explore, // torch
+// }
+
+// These are skill classes, rather than classes of tools?
+// enum MeTools {
+//   mealPrep,
+//   pickaxe,
+//   shovel,
+//   none,
+// }
+
+class ItemCount {
+  final Item item;
+  final int count;
+  ItemCount(this.item, this.count);
+}
+
+List<Item> flatten(Map<Item, int> counts) {
+  var items = <Item>[];
+  for (var item in counts.keys) {
+    var count = counts[item]!;
+    for (var i = 0; i < count; i++) {
+      items.add(item);
+    }
+  }
+  return items;
+}
 
 @immutable
 class Recipe {
-  final List<Item> inputs;
+  final Map<Item, int> inputs;
   // Tool
   // Skill required
+  final Skill skill;
+  final int skillLevel;
   // Percentage chance for a given output (e.g. eggs)
-  final List<Item> outputs;
+  final Map<Item, int> outputs;
   final bool failureGivesGoop;
   const Recipe({
     required this.inputs,
     required this.outputs,
+    required this.skill,
+    required this.skillLevel,
     this.failureGivesGoop = false,
   });
 
-  List<Item> get sortedInputTypes => inputs;
+  Iterable<ItemCount> get inputCounts =>
+      inputs.entries.map((e) => ItemCount(e.key, e.value));
+  Iterable<ItemCount> get outputCounts =>
+      outputs.entries.map((e) => ItemCount(e.key, e.value));
 
-  // Will need to be fixed for non-1 inputs.
-  int countOf(Item type) {
-    return inputs.contains(type) ? 1 : 0;
-  }
+  int inputCount(Item item) => inputs[item] ?? 0;
+  int outputCount(Item item) => outputs[item] ?? 0;
+
+  List<Item> get inputAsList => flatten(inputs);
+  // Does not respect percentage-based outputs.
+  List<Item> get outputAsList => flatten(outputs);
 }
 
 var recipes = const [
-  Recipe(inputs: [banana], outputs: [peeledBanana], failureGivesGoop: true),
+  Recipe(
+    inputs: {banana: 1},
+    outputs: {peeledBanana: 1},
+    failureGivesGoop: true,
+    skill: Skill.gather,
+    skillLevel: 0,
+  ),
 ];
+
+// FIXME: This function can't cover all items as designed.
+// It does not cover minion actions (which are a source of items).
+// e.g. gathering, hunting, exporing, etc.
+Iterable<Recipe> recipesWithOutput(Item output) sync* {
+  for (var recipe in recipes) {
+    if (recipe.outputs.keys.contains(output)) {
+      yield recipe;
+    }
+  }
+}
 
 // Peeled Banana	Banana			Hand	0	1	3
 // Peeled Orange	Orange			Hand	0	1	3
@@ -68,40 +133,40 @@ class RecipeLookup {
   const RecipeLookup(this.recipe, this.count);
 }
 
-class Cookbook {
-  int inputsMatchMultipler(CraftingInputs inputs, Recipe recipe) {
-    var inputTypes = inputs.sortedTypes;
-    var recipeTypes = recipe.sortedInputTypes;
-    if (!const IterableEquality().equals(inputTypes, recipeTypes)) {
-      return 0;
-    }
-    int multiplier = 0;
-    for (int i = 0; i < recipeTypes.length; i++) {
-      int inputCount = inputs.countOf(recipeTypes[i]);
-      int recipeCount = recipe.countOf(recipeTypes.first);
-      int remainder = inputCount % recipeCount;
-      if (remainder != 0) return 0;
-      int newMultipler = inputCount ~/ recipeCount;
-      if (multiplier == 0) {
-        multiplier = newMultipler;
-      } else if (multiplier != newMultipler) {
-        return 0;
-      }
-    }
-    return multiplier;
-  }
+// class Cookbook {
+//   int inputsMatchMultipler(CraftingInputs inputs, Recipe recipe) {
+//     var inputTypes = inputs.sortedTypes;
+//     var recipeTypes = recipe.sortedInputTypes;
+//     if (!const IterableEquality().equals(inputTypes, recipeTypes)) {
+//       return 0;
+//     }
+//     int multiplier = 0;
+//     for (int i = 0; i < recipeTypes.length; i++) {
+//       int inputCount = inputs.countOf(recipeTypes[i]);
+//       int recipeCount = recipe.countOf(recipeTypes.first);
+//       int remainder = inputCount % recipeCount;
+//       if (remainder != 0) return 0;
+//       int newMultipler = inputCount ~/ recipeCount;
+//       if (multiplier == 0) {
+//         multiplier = newMultipler;
+//       } else if (multiplier != newMultipler) {
+//         return 0;
+//       }
+//     }
+//     return multiplier;
+//   }
 
-  RecipeLookup? findRecipe(CraftingInputs inputs) {
-    // Some recipes use stacks.
-    for (var recipe in recipes) {
-      int multipler = inputsMatchMultipler(inputs, recipe);
-      if (multipler > 0) {
-        return RecipeLookup(recipe, multipler);
-      }
-    }
-    return null;
-  }
-}
+//   RecipeLookup? findRecipe(CraftingInputs inputs) {
+//     // Some recipes use stacks.
+//     for (var recipe in recipes) {
+//       int multipler = inputsMatchMultipler(inputs, recipe);
+//       if (multipler > 0) {
+//         return RecipeLookup(recipe, multipler);
+//       }
+//     }
+//     return null;
+//   }
+// }
 
 // Shouldn't be mutable.
 class CraftingInputs {
