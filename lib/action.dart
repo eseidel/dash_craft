@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'items.dart';
 import 'game.dart';
-import 'inventory.dart';
+import 'recipes.dart';
 
 // Actions types
 // craft (use current tool, click craft)
@@ -218,8 +218,13 @@ class SendMinion extends Action {
     return true;
   }
 
-  Iterable<Item> availableGatherItems(Skills skills) => gatherItems.where((i) =>
-      i.gatherSkill != null ? i.gatherSkill! <= skills[Skill.gather] : false);
+  Iterable<Item> availableGatherItems(Skills skills) {
+    return gatherItems.where((i) {
+      return i.gatherSkill != null
+          ? i.gatherSkill! <= skills[Skill.gather]
+          : false;
+    });
+  }
 
   int gatherTimeMs(ResolveContext context) {
     if (context.state.minionEnergy < 1) {
@@ -228,18 +233,38 @@ class SendMinion extends Action {
     return 100;
   }
 
-  @override
-  ActionResult resolve(ResolveContext context) {
-    // Is this a one-off, or a repeating task?
+  Skills? skillChangeForItem(Item item, Skills skills) {
+    var skillDiff = skills[Skill.gather] - item.gatherSkill!;
+    if (skillDiff >= 40) {
+      return null;
+    }
+    // This gets us something between 0.1 and 0.5, bigger when less skilled.
+    var change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
+    return Skills({Skill.gather: change});
+  }
+
+  ActionResult gatherResult(ResolveContext context) {
     var items = availableGatherItems(context.skills);
+    var item = context.pickOne(items.toList());
+
+    var addItems = [item];
+    // Half the time give double?
+    if (context.nextDouble() < 0.5) {
+      addItems.add(item);
+    }
+
     return ActionResult(
       action: this,
-      addItems: [context.pickOne(items.toList())],
+      addItems: addItems,
       timeInMilliseconds: gatherTimeMs(context),
-      skillChange: const Skills({Skill.gather: 0.1}),
+      skillChange: skillChangeForItem(item, context.skills),
       minionEnergyChange: -1,
     );
+  }
 
+  @override
+  ActionResult resolve(ResolveContext context) {
+    return gatherResult(context);
     // lumberjack
     // hunt
     // fish

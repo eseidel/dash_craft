@@ -23,7 +23,7 @@ import 'package:dash_craft/plan/mcts.dart';
 void main() {
   print("Simulating...");
   var game = Game(seed: 0);
-  var goal = Goal({banana: 100});
+  var goal = Goal({stone: 100});
   var planner = MonteCarloTreeSearchPlanner(goal);
 
   int moveNumber = 0;
@@ -35,6 +35,7 @@ void main() {
     if (moveNumber % 100 == 0) {
       print("Move $moveNumber");
       print(game.state.skills);
+      print(game.state.inventory);
     }
   }
   print("Done!");
@@ -42,7 +43,7 @@ void main() {
   print("Minion Energy: ${game.state.minionEnergy}");
   print("Stats: ${game.state.stats}");
   print("Skills: ${game.state.skills}");
-  print("Inventory: ${game.state.inventory.asMap()}");
+  print("Inventory: ${game.state.inventory.itemToCount}");
 }
 
 // class Goal {

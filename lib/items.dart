@@ -22,20 +22,26 @@ class Item {
   final int durability;
   final int? energy;
   final int? gatherSkill;
+  final int? toolLevel;
 
   const Item.other({
     required this.name,
     this.energy,
     this.gatherSkill,
   })  : durability = 0,
+        toolLevel = null,
         kind = ItemKind.other;
 
   const Item.food({required this.name, required this.energy, this.gatherSkill})
       : durability = 0,
+        toolLevel = null,
         kind = ItemKind.food;
-  const Item.tool(
-      {required this.name, required this.durability, this.gatherSkill})
-      : energy = null,
+  const Item.tool({
+    required this.name,
+    required this.durability,
+    this.gatherSkill,
+    this.toolLevel,
+  })  : energy = null,
         kind = ItemKind.tool;
 
   @override
@@ -46,7 +52,9 @@ class Item {
 const banana = Item.food(name: 'Banana', energy: 1, gatherSkill: 0);
 const orange = Item.food(name: 'Orange', energy: 1, gatherSkill: 0);
 const coconut = Item.other(name: 'Coconut', gatherSkill: 5);
-const stone = Item.tool(name: 'Stone', durability: 5, gatherSkill: 10);
+const stone =
+    Item.tool(name: 'Stone', durability: 5, toolLevel: 1, gatherSkill: 10);
+
 const peanut = Item.food(name: 'Peanut', energy: 1, gatherSkill: 15);
 const blueberry = Item.food(name: 'Blue Berry', energy: 1, gatherSkill: 20);
 const redberry = Item.food(name: 'Red Berry', energy: 1, gatherSkill: 20);
@@ -83,18 +91,37 @@ List<Item> gatherItems = const [
 
 const goop = Item.food(name: 'Goop', energy: -1);
 
+// Are these the same as recipes?
 const peeledBanana = Item.food(name: 'Peeled Banana', energy: 3);
 const peeledOrange = Item.food(name: 'Peeled Orange', energy: 3);
+const walnutKernel = Item.food(name: 'Walnut Kernel', energy: 4);
+const slicedBanana = Item.food(name: 'Sliced Banana', energy: 8);
 const peanutKernel = Item.food(name: 'Peanut Kernel', energy: 5);
+const openedCoconut = Item.food(name: 'Opened Coconut', energy: 2);
+const rawCoconut = Item.food(name: 'Raw Coconut', energy: 8);
 const mixedBerries = Item.food(name: 'Mixed Berries', energy: 5);
-
+const chestnutKernel = Item.food(name: 'Chestnut Kernel', energy: 4);
+const blueBerryMash = Item.food(name: 'Blue Berry Mash', energy: 8);
+const redBerryMash = Item.food(name: 'Red Berry Mash', energy: 8);
+const mixedBerryMash = Item.food(name: 'Mixed Berry Mash', energy: 15);
+const bananaMash = Item.food(name: 'Banana Mash', energy: 12);
+const slicedOrange = Item.food(name: 'Sliced Orange', energy: 6);
+const slicedTomato = Item.food(name: 'Sliced Tomato', energy: 8);
+const slicedCarrot = Item.food(name: 'Sliced Carrot', energy: 8);
+const cutLettuce = Item.food(name: 'Cut Lettuce', energy: 7);
+const slicedEggplant = Item.food(name: 'Sliced Eggplant', energy: 9);
+const slicedPotato = Item.food(name: 'Sliced Potato', energy: 10);
+const slicedApple = Item.food(name: 'Sliced Apple', energy: 10);
 
 const cookedRedMeat = Item.food(name: 'Cooked Red Meat', energy: 13);
 
-// const sharpStone = Item.tool(name: 'Sharp Stone', durability: 5);
-// const primativeAxe = Item.tool(name: 'Primative Axe', durability: 15);
-// const primativeHammer = Item.tool(name: 'Primative Hammer', durability: 15);
-// const primativeKnife = Item.tool(name: 'Primative Knife', durability: 15);
+// Can't be eaten, but can be burned with energy 2.
+const coconutShell = Item.other(name: 'Coconut Shell');
+
+const sharpStone = Item.tool(name: 'Sharp Stone', durability: 5);
+const primativeAxe = Item.tool(name: 'Primative Axe', durability: 15);
+const primativeHammer = Item.tool(name: 'Primative Hammer', durability: 15);
+const primativeKnife = Item.tool(name: 'Primative Knife', durability: 15);
 
 
 // Primitive axe.png	Primitive Axe	Sharp Stone	Vine	Stick	Hand	0		15		1	

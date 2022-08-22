@@ -6,6 +6,7 @@ import 'items.dart';
 
 enum Skill {
   foodPrep,
+  toolCrafting,
   gather,
 }
 
@@ -40,41 +41,62 @@ class Skills {
 
   @override
   String toString() {
-    return 'Skills(${Skill.values.map((s) => '$s: ${this[s]}').join(', ')})';
+    return 'Skills(${Skill.values.map((s) => '${s.name}: ${this[s].toStringAsFixed(1)}').join(', ')})';
   }
 }
 
 @immutable
 class Inventory {
-  final List<Item> items;
+  final Map<Item, int> itemToCount;
 
-  const Inventory({this.items = const <Item>[]});
+  static Map<Item, int> toItemCounts(List<Item> items) {
+    var itemToCount = <Item, int>{};
+    for (var item in items) {
+      itemToCount[item] = (itemToCount[item] ?? 0) + 1;
+    }
+    return Map<Item, int>.unmodifiable(itemToCount);
+  }
 
-  int countOf(Item item) => items.where((i) => i == item).length;
+  const Inventory() : itemToCount = const {};
+
+  const Inventory.fromCounts(this.itemToCount);
+  Inventory.fromItems(List<Item> items) : itemToCount = toItemCounts(items);
+
+  int countOf(Item item) => itemToCount[item] ?? 0;
 
   Inventory copyWith({List<Item>? removed, List<Item>? added}) {
-    var newItems = List<Item>.from(items);
+    var newItemCounts = Map<Item, int>.from(itemToCount);
     if (removed != null) {
       for (var toRemove in removed) {
-        newItems.remove(toRemove);
+        assert(newItemCounts[toRemove] != null);
+        assert(newItemCounts[toRemove]! > 0);
+        var newCount = (newItemCounts[toRemove] ?? 0) - 1;
+        // Important to remove the key if the count is 0 otherwise
+        // uniqueItems will be wrong.
+        if (newCount == 0) {
+          newItemCounts.remove(toRemove);
+        } else {
+          newItemCounts[toRemove] = newCount;
+        }
       }
     }
     if (added != null) {
-      newItems.addAll(added);
+      for (var toAdd in added) {
+        newItemCounts[toAdd] = (newItemCounts[toAdd] ?? 0) + 1;
+      }
     }
-    return Inventory(items: newItems);
+    return Inventory.fromCounts(newItemCounts);
   }
 
   // This will just be item (types) when Inventory hold stacks?
-  Iterable<Item> get uniqueItems => asMap().keys;
+  Iterable<Item> get uniqueItems {
+    assert(itemToCount.entries.every((element) => element.value > 0));
+    return itemToCount.keys;
+  }
 
-  Map<Item, int> asMap() {
-    var counts = <Item, int>{};
-    for (var item in items) {
-      var count = counts[item] ?? 0;
-      counts[item] = count + 1;
-    }
-    return counts;
+  @override
+  String toString() {
+    return 'Inventory($itemToCount)';
   }
 }
 
@@ -195,7 +217,7 @@ class Game {
     var result = action.resolve(context);
     // print(result);
     if (result.action is Craft) {
-      print("CRAFT");
+      print("CRAFT ${(result.action as Craft).recipe.outputs}");
     }
     state = state.copyApplying(result);
   }

@@ -1,8 +1,9 @@
 import '../action.dart';
 import '../game.dart';
-import '../inventory.dart';
+import '../recipes.dart';
 import '../items.dart';
 import 'planner.dart';
+import 'dart:math';
 
 class Goal {
   final Map<Item, int> itemToCount;
@@ -13,7 +14,7 @@ class Goal {
 
   bool haveMet(GameState state) {
     var inventory = state.inventory;
-    var currentCounts = inventory.asMap();
+    var currentCounts = inventory.itemToCount;
     for (var targetCount in itemCounts) {
       var count = currentCounts[targetCount.item] ?? 0;
       if (count < targetCount.count) {
@@ -23,11 +24,27 @@ class Goal {
     return true;
   }
 
-  double scoreForState(GameState state) {
-    if (haveMet(state)) {
-      return 1.0;
+  double percentComplete(GameState state) {
+    // For each goal, figure out what % complete in current state.
+    // Return a weighted average of all the goals?
+    var inventory = state.inventory;
+    var currentCounts = inventory.itemToCount;
+    var percentCompleteSum = 0.0;
+    var totalTargetItems = 0;
+    for (var targetCount in itemCounts) {
+      var currentCount = currentCounts[targetCount.item] ?? 0;
+      percentCompleteSum += min(currentCount / targetCount.count, 1.0);
+      totalTargetItems += targetCount.count;
     }
-    return 0.0;
+    return percentCompleteSum / totalTargetItems;
+  }
+
+  double scoreForState(GameState state) {
+    return percentComplete(state);
+    // if (haveMet(state)) {
+    //   return 1.0;
+    // }
+    // return 0.0;
   }
 }
 
@@ -171,7 +188,7 @@ class GoalPlanner extends Planner {
     // If we need tools, plan an action tree to create them.
 
     // Action tree is only invalidated when skill state changes?
-    var itemCounts = state.inventory.asMap();
+    var itemCounts = state.inventory.itemToCount;
     for (var node in tree.children) {
       var actionFromRoot = nextAction(node, itemCounts);
       if (actionFromRoot != null) {

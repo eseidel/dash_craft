@@ -235,15 +235,20 @@ class ActionNode extends Node<ActionNode> {
 class MonteCarloTreeSearchPlanner extends Planner {
   final int _simulationsPerTurn = 50;
   ActionNode? _root;
-  final MTCS<ActionNode> _mtcs = MTCS();
+  final MTCS<ActionNode> _mtcs;
   final Goal goal;
 
-  MonteCarloTreeSearchPlanner(this.goal);
+  MonteCarloTreeSearchPlanner(this.goal, {double explorationWeight = 0.5})
+      : _mtcs = MTCS<ActionNode>(explorationWeight: explorationWeight);
 
   @override
   Action plan(GameState state) {
     _root ??= ActionNode(
         action: const DummyAction(), state: state, goal: goal, depth: 0);
+    // Update root every time with the current state.
+    // Otherwise we'll plan impossible actions?
+    _root = ActionNode(
+        action: _root!.action, state: state, goal: goal, depth: _root!.depth);
 
     for (int i = 0; i < _simulationsPerTurn; i++) {
       _mtcs.simulate(_root!);

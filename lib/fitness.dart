@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'game.dart';
-import 'inventory.dart';
+import 'recipes.dart';
 import 'items.dart';
 
 // Possible fitness values:
@@ -17,9 +17,10 @@ import 'items.dart';
 // This will de-value non-energy things?
 int totalInventoryEnergyValue(GameState state) {
   int total = 0;
-  for (var item in state.inventory.items) {
+  for (var item in state.inventory.uniqueItems) {
     if (item.energy != null) {
-      total += item.energy!;
+      var count = state.inventory.countOf(item);
+      total += item.energy! * count;
     }
   }
   return total;
@@ -46,8 +47,9 @@ int minimumSkillNeededFor(Item item) {
 // Minimum crafting levels of all inventory items added together.
 int totalInventoryCraftingLevels(GameState state) {
   int total = 0;
-  for (var item in state.inventory.items) {
-    total += minimumSkillNeededFor(item);
+  for (var item in state.inventory.uniqueItems) {
+    var count = state.inventory.countOf(item);
+    total += minimumSkillNeededFor(item) * count;
   }
   return total;
 }

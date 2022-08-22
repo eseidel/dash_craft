@@ -16,7 +16,7 @@
 * Make it possible to drag a whole stack for crafting?
 
 
-Bugs
+## Bugs
 * Crafting always works, even when missing things.
 * When multi-crafting, can you get multi-goop?
 * How is percent success effected by multi-crafting?
@@ -25,96 +25,67 @@ Bugs
 * Learning recipes
 * Recipe book
 
-
-# Skill gains
-* 2.2 after peeling 4 bananas (2 failures)
-* .5 for first orange 2.7 (success, first)
-* 0 for second orange? 2.7 (success)
-* 0.9 for 3rd orange? 3.6
-* 0 for 4th orange (success)
-* after 9th orange (fail) 5.1
-* 13th (fail) 6.0
-* 15th (fail) 6.6 (58% chance)
-* first walnut 7.1 (58% chance)
-* second walnut (fail) 7.6 (59%)
-* 4th (fail) 8.0 (60%)
-* First sharp stone 0.6
-* 3rd sharp stone +0.8, 1.4
-* 5th sharp stone +0.7 2.1
-* 7th?  0.8 to 2.9
-* 9th? 0.7 to 3.6
-* 0.7 to 4.3
-* 0.8 to 5.1
-* 0.7 to 5.8
-* 0.5 to 6.3
-* 0.6 to 6.9
-* 0.5 to 7.4
-* 0.6 to 8.0
-* 0.6 to 8.6
-* 0.6 to 9.2
-* 0.5 to 9.7
-* 
+## Gather skill
+12.0
+2 bananas +0.5
+1 banana +0.5
+1 coconut +0.5
+1 coconut +0.5
+2 bananas +0.5
+1 stone +0.5 - 15.0
+1 banana +0.5
+1 coconut +0.5
+1 banana +0.4 - 16.4
+..
+1 orange +0.4 - 17.2
+2 coconut +0.5 - 17.7
+2 coconut +0.5 - 17.8?
+1 orange +0.2 - 18.0
+2 stones + 0.3 - 18.3
+1 orange +0.2 - 18.5
+1 banana +0.2 - 18.7
+2 orange +0.2 - 18.8?
+2 stone +0.3 - 19.1
+2 orange +0.2 - 19.3
+1 banana +0.1 - 19.4
+2 orange +0.2 - 19.6
+1 orange +0.1 - 19.7
+2 coconut +0.2 - 19.9
+1 orange +0.1 - 20.0
 
 
-Meal prep
-* banana 0.5 to 8.5
-* 0.6 to 9.1
-* 0.6 to 9.7 (62% chance)
-* 0.4 to 10.1 (62% chance)
-* 0.4 to 10.5 (63%)
-* 0.6 to 11.1 (63%)
-* 0.6 to 11.7 (64%)
-* 0.6 to 12.3 (65%)
-* 0.4 to 12.7 (65%)
-* 0.5% to 13.2 (66%)
-* 0.4 to 13.6 (67%)
-* 0.3 to 13.9 (67%)
-* 0.5 to 14.4 (68%)
-* 0.5 to 14.9 ()
-* 0.3 to 15.2 (69%)
-* 0.3 to 15.5 (69%)
-* 0.5 to 16.0 (70%)
-* 0.4 to 16.4
-* 0.3 to 16.7
-* 0.4 to 17.1
-* 0.4 to 17.5
-* 0.3 to 17.8
-* 0.1 to 17.9 (72%)
-* 0.2 to 18.1
-* 0.1 to 18.2
-* 0.3 to 18.5
-* 0.3 to 18.8
-* 0.1 to 18.9
-* 0.1 to 19.0
-* 0.1 to 19.1
-* 0.1 to 19.2
-* 0.1 to 19.3 (74)
-* 0.3 to 19.6
-* 0.3 to 19.9
-* 0.3 to 20.2
-* 0.3 to 20.5
-* 0.1 to 20.6
-* 0.2 to 20.8
-* 0.1 to 20.9
-* 0.1 to 21.0
-* 0.1 to 21.1
-* 0.3 to 21.4
-* 0.1 to 21.5
-* 0.1 to 21.6
-* 0.3 to 21.9
-* 0.2 to 22.1
-* 0.1 to 22.2
-* 0.2 to 22.4
-* 0.2 to 22.6
-* 0.2 to 22.8
-* 0.2 to 23.0
-* 0.3 to 23.3
-* 0.1 to 23.4
-* 0.3 to 23.7
-* 0.3 to 24.0
-* 0.3 to 24.3
-* 0.3 to 24.3
-* 0.1 to 36.4 (95%)
-* 0.1 to 36.5 (95%)
+## MCTS Best yet (goal: 100 stones)
 
-Banana's cap out at 40
+### explorationWeight = 1.0:
+
+Me Energy: 85
+Minion Energy: -469
+Stats: GameStats{clicks: 2301, timeInMilliseconds: 1370200}
+Skills: Skills(Skill.foodPrep: 0.7, Skill.toolCrafting: 0.0, Skill.gather: 135.0999999999966)
+Inventory: {Coconut: 136, Stone: 100, Peeled Orange: 4, Stick: 72, Vine: 65, Goop: 4, Orange: 20, Walnut: 26, Banana: 16, Peanut: 14, Potato: 12, Chestnut: 14, Red Berry: 14, Apple: 13, Blue Berry: 6, Tomato: 9, Eggplant: 2, Lettuce: 2, Carrot: 2}
+
+### explorationWeight = 0.5: (with some fixes)
+
+Move 2700
+Skills(Skill.foodPrep: 4.899999999999999, Skill.toolCrafting: 0.0, Skill.gather: 150.09999999999576)
+Inventory({Coconut: 137, Stone: 99, Stick: 83, Vine: 84, Red Berry: 1})
+Done!
+Me Energy: 100
+Minion Energy: -521
+Stats: GameStats{clicks: 2709, timeInMilliseconds: 1607100}
+Skills: Skills(Skill.foodPrep: 4.899999999999999, Skill.toolCrafting: 0.0, Skill.gather: 150.59999999999573)
+Inventory: {Coconut: 138, Stone: 100, Stick: 83, Vine: 84}
+
+### After having fixed skills to gain faster and cap at 40 from diff.
+
+Move 1400
+Skills(foodPrep: 5.0, toolCrafting: 0.0, gather: 57.6)
+Inventory({Coconut: 90, Stone: 96, Stick: 41, Vine: 46, Peeled Orange: 1, Eggplant: 1})
+CRAFT {Walnut Kernel: 1}
+CRAFT {Peanut Kernel: 1}
+Done!
+Me Energy: 100
+Minion Energy: -153
+Stats: GameStats{clicks: 1460, timeInMilliseconds: 674900}
+Skills: Skills(foodPrep: 5.2, toolCrafting: 0.0, gather: 59.3)
+Inventory: {Coconut: 94, Stone: 101, Stick: 44, Vine: 48}

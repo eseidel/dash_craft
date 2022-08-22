@@ -1,13 +1,13 @@
 import '../game.dart';
 import '../action.dart';
-import '../inventory.dart';
+import '../recipes.dart';
 
 import 'dart:math';
 
 class ActionGenerator {
   static Iterable<Craft> possibleCrafts(
       Inventory inventory, Skills skills) sync* {
-    var counts = inventory.asMap();
+    var counts = inventory.itemToCount;
     for (var recipe in recipes) {
       if (recipe.skillRequired <= skills[recipe.skill] &&
           recipe.inputs.entries.every(
@@ -33,8 +33,6 @@ class ActionGenerator {
         }
       }
     }
-    // For all food items
-    // If < than the hunger
   }
 
   static Iterable<Action> possibleActions(GameState state) sync* {
