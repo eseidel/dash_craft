@@ -89,3 +89,19 @@ Minion Energy: -153
 Stats: GameStats{clicks: 1460, timeInMilliseconds: 674900}
 Skills: Skills(foodPrep: 5.2, toolCrafting: 0.0, gather: 59.3)
 Inventory: {Coconut: 94, Stone: 101, Stick: 44, Vine: 48}
+
+### Seeded seed=0
+
+Move 1600
+Skills(foodPrep: 5.3, toolCrafting: 0.0, gather: 64.4)
+Inventory({Coconut: 116, Stone: 94, Vine: 68, Stick: 43, Apple: 3, Goop: 1, Peanut: 1})
+CRAFT {Walnut Kernel: 1}
+CRAFT {Walnut Kernel: 1}
+CRAFT {Walnut Kernel: 1}
+CRAFT {Peeled Banana: 1}
+Done!
+Me Energy: 100
+Minion Energy: -121
+Stats: GameStats{clicks: 1696, timeInMilliseconds: 797500}
+Skills: Skills(foodPrep: 5.6, toolCrafting: 0.0, gather: 66.4)
+Inventory: {Coconut: 122, Stone: 101, Vine: 75, Stick: 46, Walnut: 1, Tomato: 1}

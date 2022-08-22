@@ -264,7 +264,12 @@ class SendMinion extends Action {
 
   @override
   ActionResult resolve(ResolveContext context) {
-    return gatherResult(context);
+    switch (task) {
+      case MinionTask.gather:
+        return gatherResult(context);
+      default:
+        throw UnimplementedError();
+    }
     // lumberjack
     // hunt
     // fish

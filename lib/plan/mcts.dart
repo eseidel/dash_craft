@@ -173,32 +173,40 @@ class ActionNode extends Node<ActionNode> {
   // Current game state at this Node.
   final Goal goal;
   final GameState state;
+  final Random random;
   List<ActionNode>? _childrenCache;
   @override
   final int depth;
+  @override
+  final int hashCode;
 
-  ActionNode(
-      {required this.action,
-      required this.state,
-      required this.goal,
-      required this.depth});
+  ActionNode({
+    required this.action,
+    required this.state,
+    required this.goal,
+    required this.depth,
+    required this.random,
+  })
+  // Faster to compute the hashcode up front and cache it.
+  // This is possible since everything is immutable.
+  : hashCode =
+            action.hashCode ^ state.hashCode ^ goal.hashCode ^ depth.hashCode;
 
   @override
-  bool get hasChildren {
-    return ActionGenerator.possibleActions(state).isNotEmpty;
-  }
+  bool get hasChildren => collectChildren().isNotEmpty;
 
   @override
   Iterable<ActionNode> collectChildren() {
-    var random = Random();
     _childrenCache ??= ActionGenerator.possibleActions(state).map((action) {
       var context = ResolveContext(state, random);
       var result = action.resolve(context);
       return ActionNode(
-          action: action,
-          state: state.copyApplying(result),
-          goal: goal,
-          depth: depth + 1);
+        action: action,
+        state: state.copyApplying(result),
+        goal: goal,
+        depth: depth + 1,
+        random: random,
+      );
     }).toList();
     return _childrenCache!;
   }
@@ -222,14 +230,10 @@ class ActionNode extends Node<ActionNode> {
       identical(this, other) ||
       other is ActionNode &&
           runtimeType == other.runtimeType &&
+          depth == other.depth &&
           action == other.action &&
           state == other.state &&
-          goal == other.goal &&
-          depth == other.depth;
-
-  @override
-  int get hashCode =>
-      action.hashCode ^ state.hashCode ^ goal.hashCode ^ depth.hashCode;
+          goal == other.goal;
 }
 
 class MonteCarloTreeSearchPlanner extends Planner {
@@ -237,18 +241,32 @@ class MonteCarloTreeSearchPlanner extends Planner {
   ActionNode? _root;
   final MTCS<ActionNode> _mtcs;
   final Goal goal;
+  final Random _random;
 
-  MonteCarloTreeSearchPlanner(this.goal, {double explorationWeight = 0.5})
-      : _mtcs = MTCS<ActionNode>(explorationWeight: explorationWeight);
+  MonteCarloTreeSearchPlanner(this.goal,
+      {double explorationWeight = 0.5, int? seed})
+      : _mtcs =
+            MTCS<ActionNode>(explorationWeight: explorationWeight, seed: seed),
+        _random = Random(seed);
 
   @override
   Action plan(GameState state) {
     _root ??= ActionNode(
-        action: const DummyAction(), state: state, goal: goal, depth: 0);
+      action: const DummyAction(),
+      state: state,
+      goal: goal,
+      depth: 0,
+      random: _random,
+    );
     // Update root every time with the current state.
     // Otherwise we'll plan impossible actions?
     _root = ActionNode(
-        action: _root!.action, state: state, goal: goal, depth: _root!.depth);
+      action: _root!.action,
+      state: state,
+      goal: goal,
+      depth: _root!.depth,
+      random: _random,
+    );
 
     for (int i = 0; i < _simulationsPerTurn; i++) {
       _mtcs.simulate(_root!);

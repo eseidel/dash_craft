@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'package:args/args.dart';
+
 import 'package:dash_craft/items.dart';
 import 'package:dash_craft/game.dart';
 import 'package:dash_craft/plan/goal.dart';
@@ -20,11 +22,17 @@ import 'package:dash_craft/plan/mcts.dart';
 
 // Evaluate cost (time, clicks, energy, etc.) for a given item stack.
 
-void main() {
+void main(List<String> args) {
+  var parser = ArgParser();
+  parser.addOption('seed',
+      abbr: 's', help: 'Seed for random number generator.');
+  var results = parser.parse(args);
+  var seed = int.tryParse(results['seed']);
+
   print("Simulating...");
-  var game = Game(seed: 0);
+  var game = Game(seed: seed);
   var goal = Goal({stone: 100});
-  var planner = MonteCarloTreeSearchPlanner(goal);
+  var planner = MonteCarloTreeSearchPlanner(goal, seed: seed);
 
   int moveNumber = 0;
 
