@@ -48,7 +48,7 @@ class Recipe {
   // Tool
   // Skill required
   final Skill skill;
-  final int skillLevel;
+  final int skillRequired;
   // Percentage chance for a given output (e.g. eggs)
   final Map<Item, int> outputs;
   final bool failureGivesGoop;
@@ -56,9 +56,16 @@ class Recipe {
     required this.inputs,
     required this.outputs,
     required this.skill,
-    required this.skillLevel,
+    required this.skillRequired,
     this.failureGivesGoop = false,
   });
+
+  const Recipe.food({
+    required this.inputs,
+    required this.outputs,
+    required this.skillRequired,
+    this.failureGivesGoop = true,
+  }) : skill = Skill.foodPrep;
 
   Iterable<ItemCount> get inputCounts =>
       inputs.entries.map((e) => ItemCount(e.key, e.value));
@@ -74,12 +81,16 @@ class Recipe {
 }
 
 var recipes = const [
-  Recipe(
-    inputs: {banana: 1},
-    outputs: {peeledBanana: 1},
-    failureGivesGoop: true,
-    skill: Skill.gather,
-    skillLevel: 0,
+  Recipe.food(
+      inputs: {banana: 1}, outputs: {peeledBanana: 1}, skillRequired: 0),
+  Recipe.food(
+      inputs: {orange: 1}, outputs: {peeledOrange: 1}, skillRequired: 0),
+  Recipe.food(
+      inputs: {peanut: 1}, outputs: {peanutKernel: 1}, skillRequired: 5),
+  Recipe.food(
+    inputs: {redberry: 1, blueberry: 1},
+    outputs: {mixedBerries: 1},
+    skillRequired: 15,
   ),
 ];
 

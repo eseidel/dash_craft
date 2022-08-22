@@ -4,14 +4,12 @@ import '../inventory.dart';
 
 import 'dart:math';
 
-// Mutable, does planning.
-// Input a goal.
-// Output is successive actions to achieve the goal.
-abstract class Planner {
-  Iterable<Craft> possibleCrafts(Inventory inventory, Skills skills) sync* {
+class ActionGenerator {
+  static Iterable<Craft> possibleCrafts(
+      Inventory inventory, Skills skills) sync* {
     var counts = inventory.asMap();
     for (var recipe in recipes) {
-      if (recipe.skillLevel <= skills[recipe.skill] &&
+      if (recipe.skillRequired <= skills[recipe.skill] &&
           recipe.inputs.entries.every(
               (e) => counts[e.key] != null && counts[e.key]! >= e.value)) {
         yield Craft(recipe: recipe);
@@ -19,12 +17,12 @@ abstract class Planner {
     }
   }
 
-  List<SendMinion> possibleSendMinions(Inventory inventory) {
+  static List<SendMinion> possibleSendMinions(Inventory inventory) {
     // TODO: Other send types depending on available items.
     return [SendMinion()];
   }
 
-  Iterable<Feed> possibleFeeds(GameState state) sync* {
+  static Iterable<Feed> possibleFeeds(GameState state) sync* {
     for (var item in state.inventory.uniqueItems) {
       if (item.energy != null) {
         if (item.energy! <= state.meHunger) {
@@ -39,7 +37,7 @@ abstract class Planner {
     // If < than the hunger
   }
 
-  Iterable<Action> possibleActions(GameState state) sync* {
+  static Iterable<Action> possibleActions(GameState state) sync* {
     // all possible recipes
     for (var craft in possibleCrafts(state.inventory, state.skills)) {
       yield craft;
@@ -53,7 +51,12 @@ abstract class Planner {
       yield feed;
     }
   }
+}
 
+// Mutable, does planning.
+// Input a goal.
+// Output is successive actions to achieve the goal.
+abstract class Planner {
   Action plan(GameState state);
 }
 
@@ -63,25 +66,25 @@ class RandomPlanner extends Planner {
 
   @override
   Action plan(GameState state) {
-    var actions = possibleActions(state).toList();
+    var actions = ActionGenerator.possibleActions(state).toList();
     return actions[random.nextInt(actions.length)];
   }
 }
 
-double fitnessFunction(GameState state) {
-  double fitness = 0.0;
+// double fitnessFunction(GameState state) {
+//   double fitness = 0.0;
 
-  fitness += state.skills.totalPercent;
-  // fitness += state.totalEnergyPercent;
-  // fitness += state.inventorySizePercent;
-  // Inventory
-  // Tool power levels
-  // fitness += state.inventory.availableToolPowerLevelsPercent;
-  // // Tool durability levels
-  // fitness += state.inventory.toolDurabilityPercent;
-  // Food energy
-  // Burn energy
-  // existance of various tools?
-  // total number of items (up to a point)?
-  return fitness;
-}
+//   fitness += state.skills.totalPercent;
+//   // fitness += state.totalEnergyPercent;
+//   // fitness += state.inventorySizePercent;
+//   // Inventory
+//   // Tool power levels
+//   // fitness += state.inventory.availableToolPowerLevelsPercent;
+//   // // Tool durability levels
+//   // fitness += state.inventory.toolDurabilityPercent;
+//   // Food energy
+//   // Burn energy
+//   // existance of various tools?
+//   // total number of items (up to a point)?
+//   return fitness;
+// }

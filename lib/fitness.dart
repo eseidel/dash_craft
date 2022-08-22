@@ -39,7 +39,7 @@ int minimumSkillNeededFor(Item item) {
   }
   var recipes = recipesWithOutput(item);
   // pick the recipe which produces this output with the lowest skill level?
-  var skillLevels = recipes.map((r) => r.skillLevel).toList();
+  var skillLevels = recipes.map((r) => r.skillRequired).toList();
   return skillLevels.reduce(min);
 }
 

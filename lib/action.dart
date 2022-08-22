@@ -114,7 +114,7 @@ class Craft extends Action {
 
   @override
   int maxOutputCount(Item item, Skills skills) {
-    if (skills[recipe.skill] < recipe.skillLevel) {
+    if (skills[recipe.skill] < recipe.skillRequired) {
       return 0;
     }
     return recipe.outputCount(item);

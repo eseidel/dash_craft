@@ -1,6 +1,9 @@
+// ignore_for_file: avoid_print
+
 import 'package:dash_craft/items.dart';
 import 'package:dash_craft/game.dart';
 import 'package:dash_craft/plan/goal.dart';
+import 'package:dash_craft/plan/mcts.dart';
 
 // MVP
 // A thing which can simulate to peel 100 bananas
@@ -21,11 +24,18 @@ void main() {
   print("Simulating...");
   var game = Game(seed: 0);
   var goal = Goal({banana: 100});
-  var planner = GoalPlanner(goal);
+  var planner = MonteCarloTreeSearchPlanner(goal);
+
+  int moveNumber = 0;
 
   while (!goal.haveMet(game.state)) {
     var action = planner.plan(game.state);
     game.apply(action);
+    moveNumber++;
+    if (moveNumber % 100 == 0) {
+      print("Move $moveNumber");
+      print(game.state.skills);
+    }
   }
   print("Done!");
   print("Me Energy: ${game.state.meEnergy}");

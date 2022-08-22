@@ -85,6 +85,9 @@ const goop = Item.food(name: 'Goop', energy: -1);
 
 const peeledBanana = Item.food(name: 'Peeled Banana', energy: 3);
 const peeledOrange = Item.food(name: 'Peeled Orange', energy: 3);
+const peanutKernel = Item.food(name: 'Peanut Kernel', energy: 5);
+const mixedBerries = Item.food(name: 'Mixed Berries', energy: 5);
+
 
 const cookedRedMeat = Item.food(name: 'Cooked Red Meat', energy: 13);
 

@@ -22,6 +22,13 @@ class Goal {
     }
     return true;
   }
+
+  double scoreForState(GameState state) {
+    if (haveMet(state)) {
+      return 1.0;
+    }
+    return 0.0;
+  }
 }
 
 Action pickAction(List<Action> actions) {

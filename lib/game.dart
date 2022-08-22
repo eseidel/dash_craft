@@ -7,7 +7,6 @@ import 'items.dart';
 enum Skill {
   foodPrep,
   gather,
-  minionFetch,
 }
 
 @immutable
@@ -164,6 +163,22 @@ class GameState {
       stats: stats ?? this.stats,
     );
   }
+
+  GameState copyApplying(ActionResult result) {
+    return copyWith(
+      inventory: inventory.copyWith(
+        removed: result.removeItems,
+        added: result.addItems,
+      ),
+      stats: stats.copyAdding(
+        clicks: 1,
+        timeInMilliseconds: result.timeInMilliseconds,
+      ),
+      skills: skills + result.skillChange,
+      minionEnergy: minionEnergy + result.minionEnergyChange,
+      meEnergy: meEnergy + result.meEnergyChange,
+    );
+  }
 }
 
 // Mutable, handles rules
@@ -175,26 +190,13 @@ class Game {
       : _random = Random(seed),
         state = const GameState.empty();
 
-  GameState stateByApplying(ActionResult result) {
-    return state.copyWith(
-      inventory: state.inventory.copyWith(
-        removed: result.removeItems,
-        added: result.addItems,
-      ),
-      stats: state.stats.copyAdding(
-        clicks: 1,
-        timeInMilliseconds: result.timeInMilliseconds,
-      ),
-      skills: state.skills + result.skillChange,
-      minionEnergy: state.minionEnergy + result.minionEnergyChange,
-      meEnergy: state.meEnergy + result.meEnergyChange,
-    );
-  }
-
   void apply(Action action) {
     var context = ResolveContext(state, _random);
     var result = action.resolve(context);
-    print(result);
-    state = stateByApplying(result);
+    // print(result);
+    if (result.action is Craft) {
+      print("CRAFT");
+    }
+    state = state.copyApplying(result);
   }
 }
