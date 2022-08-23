@@ -27,7 +27,7 @@ void main(List<String> args) {
   parser.addOption('seed',
       abbr: 's', help: 'Seed for random number generator.');
   var results = parser.parse(args);
-  var seed = int.tryParse(results['seed']);
+  var seed = int.tryParse(results['seed'] ?? '');
 
   print("Simulating...");
   var game = Game(seed: seed);
