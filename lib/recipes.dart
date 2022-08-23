@@ -85,6 +85,11 @@ class Recipe {
   List<Item> get inputAsList => flatten(inputs);
   // Does not respect percentage-based outputs.
   List<Item> get outputAsList => flatten(outputs);
+
+  @override
+  String toString() {
+    return 'Recipe($outputs)';
+  }
 }
 
 var recipes = const [
@@ -189,6 +194,12 @@ var recipes = const [
     inputs: {lettuce: 1},
     tool: MeTool.sharpStone,
     skillRequired: 30,
+  ),
+  Recipe.tool(
+    outputs: {sharpStone: 1},
+    inputs: {stone: 1},
+    tool: MeTool.stone,
+    skillRequired: 0,
   ),
 ];
 
