@@ -73,6 +73,26 @@ class ResolveContext {
 
   Skills get skills => state.skills;
 
+  Skills? gatherSkillChange(Item item) {
+    var skillDiff = skills[Skill.gather] - item.gatherSkill!;
+    if (skillDiff >= 40) {
+      return null;
+    }
+    // This gets us something between 0.1 and 0.5, bigger when less skilled.
+    var change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
+    return Skills({Skill.gather: change});
+  }
+
+  Skills? craftingSkillChange(Recipe recipe) {
+    var skillDiff = skills[recipe.skill] - recipe.skillRequired;
+    if (skillDiff >= 40) {
+      return null;
+    }
+    // This gets us something between 0.1 and 0.5, bigger when less skilled.
+    var change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
+    return Skills({recipe.skill: change});
+  }
+
   double nextDouble() => random.nextDouble();
   Item pickOne(List<Item> items) => items[random.nextInt(items.length)];
 }
@@ -132,10 +152,6 @@ class Craft extends Action {
     return 0.5;
   }
 
-  double learningRate(Skills skills) {
-    return 0.1;
-  }
-
   int craftTimeMs(Skills skills) {
     return 1000;
   }
@@ -170,12 +186,15 @@ class Craft extends Action {
         timeInMilliseconds: craftTimeMs(context.skills),
         removeItems: recipe.inputAsList,
         addItems: recipe.failureGivesGoop ? [goop] : [],
-        skillChange: Skills({Skill.foodPrep: learningRate(context.skills)}),
+        skillChange: context.craftingSkillChange(recipe),
       );
     }
     // Learn about the recipe requirements if necessary
     // If learned, show recipe on screen.
   }
+
+  @override
+  String toString() => 'Craft($recipe)';
 }
 
 enum MinionTask {
@@ -233,16 +252,6 @@ class SendMinion extends Action {
     return 100;
   }
 
-  Skills? skillChangeForItem(Item item, Skills skills) {
-    var skillDiff = skills[Skill.gather] - item.gatherSkill!;
-    if (skillDiff >= 40) {
-      return null;
-    }
-    // This gets us something between 0.1 and 0.5, bigger when less skilled.
-    var change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
-    return Skills({Skill.gather: change});
-  }
-
   ActionResult gatherResult(ResolveContext context) {
     var items = availableGatherItems(context.skills);
     var item = context.pickOne(items.toList());
@@ -257,7 +266,7 @@ class SendMinion extends Action {
       action: this,
       addItems: addItems,
       timeInMilliseconds: gatherTimeMs(context),
-      skillChange: skillChangeForItem(item, context.skills),
+      skillChange: context.gatherSkillChange(item),
       minionEnergyChange: -1,
     );
   }
@@ -278,7 +287,7 @@ class SendMinion extends Action {
 
   @override
   String toString() {
-    return 'SendMinion{task: $task}';
+    return 'SendMinion(${task.name})';
   }
 }
 
@@ -302,6 +311,7 @@ class Feed extends Action {
 
   @override
   double outputChance(ItemCount count, Skills skills) {
+    
     // This also needs to handle output chance for shells, pots, etc.
     return 0.0;
   }
