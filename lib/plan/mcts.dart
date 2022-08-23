@@ -48,6 +48,7 @@ class MTCS<T extends Node<T>> {
     // We've not explored any children, just pick a random one.
     var exploredChildren = _children[node];
     if (exploredChildren == null) {
+      print("Not explored any children!");
       return node.randomChild(random)!;
     }
 
@@ -57,10 +58,15 @@ class MTCS<T extends Node<T>> {
         return double.negativeInfinity;
       }
       double reward = _rewards[child] ?? 0;
+      // print(
+      //     "${(child as ActionNode).action} reward: ${reward.toStringAsFixed(2)} visits: $visits");
       return reward / visits;
     }
 
-    return exploredChildren.reduce((a, b) => score(a) > score(b) ? a : b);
+    var choice = exploredChildren.reduce((a, b) => score(a) > score(b) ? a : b);
+    // print(
+    //     "# Choose ${(choice as ActionNode).action} with score ${score(choice).toStringAsPrecision(6)}");
+    return choice;
   }
 
   void simulate(T node) {
@@ -244,7 +250,7 @@ class MonteCarloTreeSearchPlanner extends Planner {
   final Random _random;
 
   MonteCarloTreeSearchPlanner(this.goal,
-      {double explorationWeight = 0.5, int? seed})
+      {double explorationWeight = 1.4, int? seed})
       : _mtcs =
             MTCS<ActionNode>(explorationWeight: explorationWeight, seed: seed),
         _random = Random(seed);
