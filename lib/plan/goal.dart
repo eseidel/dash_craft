@@ -24,19 +24,20 @@ class Goal {
     return true;
   }
 
+  // If the goal is 2 A and 1 B, return .3 when we have 0 A and 1 B.
   double percentComplete(GameState state) {
     // For each goal, figure out what % complete in current state.
     // Return a weighted average of all the goals?
     var inventory = state.inventory;
     var currentCounts = inventory.itemToCount;
-    var percentCompleteSum = 0.0;
+    var currentGoalItems = 0;
     var totalTargetItems = 0;
     for (var targetCount in itemCounts) {
-      var currentCount = currentCounts[targetCount.item] ?? 0;
-      percentCompleteSum += min(currentCount / targetCount.count, 1.0);
+      currentGoalItems +=
+          min(currentCounts[targetCount.item] ?? 0, targetCount.count);
       totalTargetItems += targetCount.count;
     }
-    return percentCompleteSum / totalTargetItems;
+    return currentGoalItems / totalTargetItems;
   }
 
   double scoreForState(GameState state) {
