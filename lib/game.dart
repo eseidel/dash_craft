@@ -66,7 +66,7 @@ class Inventory {
 
   Inventory copyWith({List<Item>? removed, List<Item>? added}) {
     var newItemCounts = Map<Item, int>.from(itemToCount);
-    if (removed != null) {
+    if (removed != null && removed.isNotEmpty) {
       for (var toRemove in removed) {
         assert(newItemCounts[toRemove] != null);
         assert(newItemCounts[toRemove]! > 0);
@@ -80,7 +80,7 @@ class Inventory {
         }
       }
     }
-    if (added != null) {
+    if (added != null && added.isNotEmpty) {
       for (var toAdd in added) {
         newItemCounts[toAdd] = (newItemCounts[toAdd] ?? 0) + 1;
       }
