@@ -1,9 +1,9 @@
-import 'package:meta/meta.dart';
 import 'dart:math';
 
-import 'items.dart';
-import 'game.dart';
-import 'recipes.dart';
+import 'package:dash_craft/game.dart';
+import 'package:dash_craft/items.dart';
+import 'package:dash_craft/recipes.dart';
+import 'package:meta/meta.dart';
 
 // Actions types
 // craft (use current tool, click craft)
@@ -14,24 +14,13 @@ import 'recipes.dart';
 // equip (drag item onto slot)
 
 class ActionResult {
-  // Inventory changes
-  // skill changes
-  final Action action;
-  final List<Item> addItems;
-  final List<Item> removeItems;
-  final int timeInMilliseconds;
-  final Skills skillChange;
-
-  final int meEnergyChange;
-  final int minionEnergyChange;
-
   const ActionResult({
     required this.action,
+    required this.timeInMilliseconds,
     this.addItems = const [],
     this.removeItems = const [],
     this.meEnergyChange = 0,
     this.minionEnergyChange = 0,
-    required this.timeInMilliseconds,
     Skills? skillChange,
   }) : skillChange = skillChange ?? const Skills();
 
@@ -43,10 +32,20 @@ class ActionResult {
         meEnergyChange = 0,
         minionEnergyChange = 0,
         skillChange = const Skills();
+  // Inventory changes
+  // skill changes
+  final Action action;
+  final List<Item> addItems;
+  final List<Item> removeItems;
+  final int timeInMilliseconds;
+  final Skills skillChange;
+
+  final int meEnergyChange;
+  final int minionEnergyChange;
 
   @override
   String toString() {
-    var values = [];
+    final values = <String>[];
     if (addItems.isNotEmpty) {
       values.add('addItems: $addItems');
     }
@@ -67,29 +66,29 @@ class ActionResult {
 }
 
 class ResolveContext {
+  ResolveContext(this.state, this.random);
   final Random random;
   final GameState state;
-  ResolveContext(this.state, this.random);
 
   Skills get skills => state.skills;
 
   Skills? gatherSkillChange(Item item) {
-    var skillDiff = skills[Skill.gather] - item.gatherSkill!;
+    final skillDiff = skills[Skill.gather] - item.gatherSkill!;
     if (skillDiff >= 40) {
       return null;
     }
     // This gets us something between 0.1 and 0.5, bigger when less skilled.
-    var change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
+    final change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
     return Skills({Skill.gather: change});
   }
 
   Skills? craftingSkillChange(Recipe recipe) {
-    var skillDiff = skills[recipe.skill] - recipe.skillRequired;
+    final skillDiff = skills[recipe.skill] - recipe.skillRequired;
     if (skillDiff >= 40) {
       return null;
     }
     // This gets us something between 0.1 and 0.5, bigger when less skilled.
-    var change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
+    final change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
     return Skills({recipe.skill: change});
   }
 
@@ -118,7 +117,7 @@ class DummyAction extends Action {
   @override
   int maxOutputCount(Item item, Skills skills) => 0;
   @override
-  double outputChance(ItemCount count, Skills skills) => 0.0;
+  double outputChance(ItemCount count, Skills skills) => 0;
 
   @override
   bool validate(GameState state) => true;
@@ -127,8 +126,8 @@ class DummyAction extends Action {
 }
 
 class Craft extends Action {
-  final Recipe recipe;
   const Craft({required this.recipe});
+  final Recipe recipe;
   // Tool
   // specific inputs
 
@@ -143,7 +142,7 @@ class Craft extends Action {
   @override
   double outputChance(ItemCount count, Skills skills) {
     if (recipe.outputCount(count.item) < count.count) {
-      return 0.0;
+      return 0;
     }
     return successChance(skills);
   }
@@ -218,10 +217,10 @@ class SendMinion extends Action {
   @override
   double outputChance(ItemCount count, Skills skills) {
     // FIXME: Some gathers should return multiple items.
-    if (count.count != 1) return 0.0;
+    if (count.count != 1) return 0;
 
-    var availableItems = availableGatherItems(skills);
-    if (!availableItems.contains(count.item)) return 0.0;
+    final availableItems = availableGatherItems(skills);
+    if (!availableItems.contains(count.item)) return 0;
     return 1.0 / availableItems.length;
   }
 
@@ -253,10 +252,10 @@ class SendMinion extends Action {
   }
 
   ActionResult gatherResult(ResolveContext context) {
-    var items = availableGatherItems(context.skills);
-    var item = context.pickOne(items.toList());
+    final items = availableGatherItems(context.skills);
+    final item = context.pickOne(items.toList());
 
-    var addItems = [item];
+    final addItems = [item];
     // Half the time give double?
     if (context.nextDouble() < 0.5) {
       addItems.add(item);
@@ -297,11 +296,10 @@ enum TargetHuman {
 }
 
 class Feed extends Action {
+  const Feed({required this.inputs, required this.target});
   // inputs
   final List<Item> inputs;
   final TargetHuman target;
-
-  const Feed({required this.inputs, required this.target});
 
   @override
   int maxOutputCount(Item item, Skills skills) {
@@ -311,9 +309,8 @@ class Feed extends Action {
 
   @override
   double outputChance(ItemCount count, Skills skills) {
-    
     // This also needs to handle output chance for shells, pots, etc.
-    return 0.0;
+    return 0;
   }
 
   @override
@@ -328,7 +325,7 @@ class Feed extends Action {
   ActionResult resolve(ResolveContext context) {
     // Eat as much as possible.
     // Remove any inputs we consumed.
-    var totalEnergy = inputs
+    final totalEnergy = inputs
         .map((i) => i.energy ?? 0)
         .reduce((value, element) => value + element);
     if (target == TargetHuman.me) {

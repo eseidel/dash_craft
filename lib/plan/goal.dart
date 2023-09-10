@@ -1,22 +1,23 @@
-import '../action.dart';
-import '../game.dart';
-import '../recipes.dart';
-import '../items.dart';
-import 'planner.dart';
 import 'dart:math';
 
+import 'package:dash_craft/action.dart';
+import 'package:dash_craft/game.dart';
+import 'package:dash_craft/items.dart';
+import 'package:dash_craft/plan/planner.dart';
+import 'package:dash_craft/recipes.dart';
+
 class Goal {
-  final Map<Item, int> itemToCount;
   Goal(this.itemToCount);
+  final Map<Item, int> itemToCount;
 
   Iterable<ItemCount> get itemCounts =>
       itemToCount.entries.map((e) => ItemCount(e.key, e.value));
 
   bool haveMet(GameState state) {
-    var inventory = state.inventory;
-    var currentCounts = inventory.itemToCount;
-    for (var targetCount in itemCounts) {
-      var count = currentCounts[targetCount.item] ?? 0;
+    final inventory = state.inventory;
+    final currentCounts = inventory.itemToCount;
+    for (final targetCount in itemCounts) {
+      final count = currentCounts[targetCount.item] ?? 0;
       if (count < targetCount.count) {
         return false;
       }
@@ -28,11 +29,11 @@ class Goal {
   double percentComplete(GameState state) {
     // For each goal, figure out what % complete in current state.
     // Return a weighted average of all the goals?
-    var inventory = state.inventory;
-    var currentCounts = inventory.itemToCount;
+    final inventory = state.inventory;
+    final currentCounts = inventory.itemToCount;
     var currentGoalItems = 0;
     var totalTargetItems = 0;
-    for (var targetCount in itemCounts) {
+    for (final targetCount in itemCounts) {
       currentGoalItems +=
           min(currentCounts[targetCount.item] ?? 0, targetCount.count);
       totalTargetItems += targetCount.count;
@@ -54,8 +55,8 @@ Action pickAction(List<Action> actions) {
 }
 
 Iterable<Action> actionsWithOutput(Item output) sync* {
-  var recipes = recipesWithOutput(output);
-  for (var recipe in recipes) {
+  final recipes = recipesWithOutput(output);
+  for (final recipe in recipes) {
     yield Craft(recipe: recipe);
   }
   if (output.gatherSkill != null) {
@@ -65,10 +66,9 @@ Iterable<Action> actionsWithOutput(Item output) sync* {
 }
 
 class ActionNodeCache {
+  ActionNodeCache(this.state);
   final GameState state;
   final Map<ItemCount, ActionNode> _cache = {};
-
-  ActionNodeCache(this.state);
 
   ActionNode actionSubtreeForItemCount(ItemCount count) {
     if (!_cache.containsKey(count)) {
@@ -103,23 +103,23 @@ class ActionNodeCache {
     // Action nodes include best/worse case for number of actions, and can also
     // be queried for how much energy cost or tool cost is needed for the subtree.
 
-    assert(!_cache.containsKey(count));
+    assert(!_cache.containsKey(count), 'Cache already contains $count');
     // e.g. Peeled banana
     // Figure out what actions produce such, pick the best one.
     // Do we need to pick one or just keep them all?
-    var actions = actionsWithOutput(count.item);
-    assert(actions.isNotEmpty);
-    var action = pickAction(actions.toList());
+    final actions = actionsWithOutput(count.item);
+    assert(actions.isNotEmpty, 'No actions for $count');
+    final action = pickAction(actions.toList());
 
     // Recurse on the inputs of the action(s).
-    var children = childActionNodesForAction(action).toList();
+    final children = childActionNodesForAction(action).toList();
     // Return the node linking to recursed children.
     // var bestCaseCount =
     //     (count.count / action.maxOutputCount(count.item, state.skills)).ceil();
     // // Figure out the success chance of the action.
     // var successChance = action.outputChance(count, state.skills);
     // var worstCaseCount = (bestCaseCount / successChance).ceil();
-    var node = ActionNode(
+    final node = ActionNode(
       output: count,
       action: action,
       children: children,
@@ -131,26 +131,25 @@ class ActionNodeCache {
 }
 
 class ActionTree extends Node {
-  final Goal goal;
-  final GameState state;
-  final ActionNodeCache _cache;
-
   ActionTree.build(this.state, this.goal)
       : _cache = ActionNodeCache(state),
         super.root() {
     children = goal.itemCounts.map(_cache.actionSubtreeForItemCount).toList();
   }
+  final Goal goal;
+  final GameState state;
+  final ActionNodeCache _cache;
 }
 
 class GoalPlanner extends Planner {
-  final Goal goal;
   GoalPlanner(this.goal);
+  final Goal goal;
 
   Action? nextAction(ActionNode root, Map<Item, int> itemCounts) {
     // Start at the root of the action tree and walk until we find an action
     // which needs completing.
     // Do we have the items this node is trying to generate?
-    var existingCount = itemCounts[root.output.item] ?? 0;
+    final existingCount = itemCounts[root.output.item] ?? 0;
     if (existingCount >= root.output.count) {
       // If so, then return null.
       // Do we need to remove the items from the item counts?
@@ -158,8 +157,8 @@ class GoalPlanner extends Planner {
       return null;
     }
     // If we're not done check if our children have work to do.
-    for (var node in root.children) {
-      var actionFromDecendent = nextAction(node, itemCounts);
+    for (final node in root.children) {
+      final actionFromDecendent = nextAction(node, itemCounts);
       if (actionFromDecendent != null) {
         return actionFromDecendent;
       }
@@ -173,7 +172,6 @@ class GoalPlanner extends Planner {
     // Do we need energy?  If so, eat.
     if (state.meHunger > 10 || state.minionHunger > 10) {
       // Do we have food (ideally cooked food)?
-
     }
     // Do we have things we can cook?
     // Do we have resources with which to cook?
@@ -181,7 +179,7 @@ class GoalPlanner extends Planner {
     // If we don't have food, gather (and skin).
 
     // Figure out what actions are needed to get to the goal.
-    var tree = ActionTree.build(state, goal);
+    final tree = ActionTree.build(state, goal);
     // How much energy will this action tree cost?
     // Plan to fetch that much food?
 
@@ -189,14 +187,16 @@ class GoalPlanner extends Planner {
     // If we need tools, plan an action tree to create them.
 
     // Action tree is only invalidated when skill state changes?
-    var itemCounts = state.inventory.itemToCount;
-    for (var node in tree.children) {
-      var actionFromRoot = nextAction(node, itemCounts);
+    final itemCounts = state.inventory.itemToCount;
+    for (final node in tree.children) {
+      final actionFromRoot = nextAction(node, itemCounts);
       if (actionFromRoot != null) {
         return actionFromRoot;
       }
     }
-    throw "Goal must already have been completed if action tree is complete?";
+    throw Exception(
+      'Goal must already have been completed if action tree is complete?',
+    );
   }
 }
 
@@ -207,11 +207,10 @@ class GoalPlanner extends Planner {
 // ActUntil(goal) with expectation of how many?
 
 class Node {
-  late final List<ActionNode> children;
-
   Node(this.children);
 
   Node.root();
+  late final List<ActionNode> children;
 
   int get subTreeMinCount =>
       children.fold(0, (sum, child) => sum + child.subTreeMinCount);
@@ -220,8 +219,6 @@ class Node {
 }
 
 class ActionNode extends Node {
-  final ItemCount output;
-  final Action action;
   // int bestCaseActionCount;
   // int worstCaseActionCount; // best case / success chance
 
@@ -232,4 +229,6 @@ class ActionNode extends Node {
     // required this.bestCaseActionCount,
     // required this.worstCaseActionCount,
   }) : super(children);
+  final ItemCount output;
+  final Action action;
 }

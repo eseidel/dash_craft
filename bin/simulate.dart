@@ -1,9 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'package:args/args.dart';
-
-import 'package:dash_craft/items.dart';
 import 'package:dash_craft/game.dart';
+import 'package:dash_craft/items.dart';
 import 'package:dash_craft/plan/goal.dart';
 import 'package:dash_craft/plan/mcts.dart';
 
@@ -23,35 +22,38 @@ import 'package:dash_craft/plan/mcts.dart';
 // Evaluate cost (time, clicks, energy, etc.) for a given item stack.
 
 void main(List<String> args) {
-  var parser = ArgParser();
-  parser.addOption('seed',
-      abbr: 's', help: 'Seed for random number generator.');
-  var results = parser.parse(args);
-  var seed = int.tryParse(results['seed'] ?? '');
+  final parser = ArgParser()
+    ..addOption(
+      'seed',
+      abbr: 's',
+      help: 'Seed for random number generator.',
+    );
+  final results = parser.parse(args);
+  final seed = int.tryParse(results['seed'] as String? ?? '');
 
-  print("Simulating...");
-  var game = Game(seed: seed);
-  var goal = Goal({stone: 100});
-  var planner = MonteCarloTreeSearchPlanner(goal, seed: seed);
+  print('Simulating...');
+  final game = Game(seed: seed);
+  final goal = Goal({stone: 100});
+  final planner = MonteCarloTreeSearchPlanner(goal, seed: seed);
 
-  int moveNumber = 0;
+  var moveNumber = 0;
 
   while (!goal.haveMet(game.state)) {
-    var action = planner.plan(game.state);
+    final action = planner.plan(game.state);
     game.apply(action);
     moveNumber++;
     if (moveNumber % 100 == 0) {
-      print("Move $moveNumber");
+      print('Move $moveNumber');
       print(game.state.skills);
       print(game.state.inventory);
     }
   }
-  print("Done!");
-  print("Me Energy: ${game.state.meEnergy}");
-  print("Minion Energy: ${game.state.minionEnergy}");
-  print("Stats: ${game.state.stats}");
-  print("Skills: ${game.state.skills}");
-  print("Inventory: ${game.state.inventory.itemToCount}");
+  print('Done!');
+  print('Me Energy: ${game.state.meEnergy}');
+  print('Minion Energy: ${game.state.minionEnergy}');
+  print('Stats: ${game.state.stats}');
+  print('Skills: ${game.state.skills}');
+  print('Inventory: ${game.state.inventory.itemToCount}');
 }
 
 // class Goal {

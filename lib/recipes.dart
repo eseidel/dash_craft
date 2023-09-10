@@ -1,7 +1,6 @@
+import 'package:dash_craft/game.dart';
+import 'package:dash_craft/items.dart';
 import 'package:meta/meta.dart';
-
-import 'items.dart';
-import 'game.dart';
 
 // Can Recipes unify with gather/hunt actions?
 // Would need to have a "which human can do this"
@@ -23,15 +22,15 @@ enum MeTool {
 }
 
 class ItemCount {
+  ItemCount(this.item, this.count);
   final Item item;
   final int count;
-  ItemCount(this.item, this.count);
 }
 
 List<Item> flatten(Map<Item, int> counts) {
-  var items = <Item>[];
-  for (var item in counts.keys) {
-    var count = counts[item]!;
+  final items = <Item>[];
+  for (final item in counts.keys) {
+    final count = counts[item]!;
     for (var i = 0; i < count; i++) {
       items.add(item);
     }
@@ -41,14 +40,6 @@ List<Item> flatten(Map<Item, int> counts) {
 
 @immutable
 class Recipe {
-  final Map<Item, int> inputs;
-  final MeTool tool;
-  // Skill required
-  final Skill skill;
-  final int skillRequired;
-  // Percentage chance for a given output (e.g. eggs)
-  final Map<Item, int> outputs;
-  final bool failureGivesGoop;
   const Recipe({
     required this.inputs,
     required this.outputs,
@@ -73,6 +64,14 @@ class Recipe {
     required this.skillRequired,
   })  : skill = Skill.toolCrafting,
         failureGivesGoop = false;
+  final Map<Item, int> inputs;
+  final MeTool tool;
+  // Skill required
+  final Skill skill;
+  final int skillRequired;
+  // Percentage chance for a given output (e.g. eggs)
+  final Map<Item, int> outputs;
+  final bool failureGivesGoop;
 
   Iterable<ItemCount> get inputCounts =>
       inputs.entries.map((e) => ItemCount(e.key, e.value));
@@ -92,7 +91,7 @@ class Recipe {
   }
 }
 
-var recipes = const [
+List<Recipe> recipes = const [
   Recipe.food(
     outputs: {peeledBanana: 1},
     inputs: {banana: 1},
@@ -207,7 +206,7 @@ var recipes = const [
 // It does not cover minion actions (which are a source of items).
 // e.g. gathering, hunting, exporing, etc.
 Iterable<Recipe> recipesWithOutput(Item output) sync* {
-  for (var recipe in recipes) {
+  for (final recipe in recipes) {
     if (recipe.outputs.keys.contains(output)) {
       yield recipe;
     }
@@ -247,9 +246,9 @@ Iterable<Recipe> recipesWithOutput(Item output) sync* {
 
 @immutable
 class RecipeLookup {
+  const RecipeLookup(this.recipe, this.count);
   final Recipe recipe;
   final int count;
-  const RecipeLookup(this.recipe, this.count);
 }
 
 // class Cookbook {

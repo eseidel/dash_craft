@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'game.dart';
-import 'recipes.dart';
-import 'items.dart';
+import 'package:dash_craft/game.dart';
+import 'package:dash_craft/items.dart';
+import 'package:dash_craft/recipes.dart';
 
 // Possible fitness values:
 
@@ -16,10 +16,10 @@ import 'items.dart';
 // ** Total inventory Energy value?
 // This will de-value non-energy things?
 int totalInventoryEnergyValue(GameState state) {
-  int total = 0;
-  for (var item in state.inventory.uniqueItems) {
+  var total = 0;
+  for (final item in state.inventory.uniqueItems) {
     if (item.energy != null) {
-      var count = state.inventory.countOf(item);
+      final count = state.inventory.countOf(item);
       total += item.energy! * count;
     }
   }
@@ -38,17 +38,17 @@ int minimumSkillNeededFor(Item item) {
   if (item.gatherSkill != null) {
     return item.gatherSkill!;
   }
-  var recipes = recipesWithOutput(item);
+  final recipes = recipesWithOutput(item);
   // pick the recipe which produces this output with the lowest skill level?
-  var skillLevels = recipes.map((r) => r.skillRequired).toList();
+  final skillLevels = recipes.map((r) => r.skillRequired).toList();
   return skillLevels.reduce(min);
 }
 
 // Minimum crafting levels of all inventory items added together.
 int totalInventoryCraftingLevels(GameState state) {
-  int total = 0;
-  for (var item in state.inventory.uniqueItems) {
-    var count = state.inventory.countOf(item);
+  var total = 0;
+  for (final item in state.inventory.uniqueItems) {
+    final count = state.inventory.countOf(item);
     total += minimumSkillNeededFor(item) * count;
   }
   return total;

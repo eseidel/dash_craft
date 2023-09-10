@@ -1,10 +1,9 @@
-import 'package:dash_craft/game.dart';
+import 'dart:math';
 
 import 'package:dash_craft/action.dart';
-
-import 'planner.dart';
-import 'goal.dart';
-import 'dart:math';
+import 'package:dash_craft/game.dart';
+import 'package:dash_craft/plan/goal.dart';
+import 'package:dash_craft/plan/planner.dart';
 
 // Inspired by https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
 
@@ -24,15 +23,14 @@ abstract class Node<T extends Node<T>> {
 }
 
 class MTCS<T extends Node<T>> {
+  MTCS({this.explorationWeight = 1.0, int? seed, this.maxSimulationDepth = 100})
+      : random = Random(seed);
   final Map<T, double> _rewards = {}; // aka 'Q'
   final Map<T, double> _visits = {}; // aka 'N'
   final Map<T, List<T>> _children = {};
   final double explorationWeight;
   final int maxSimulationDepth;
   final Random random;
-
-  MTCS({this.explorationWeight = 1.0, int? seed, this.maxSimulationDepth = 100})
-      : random = Random(seed);
 
   void pruneCaches(int depth) {
     _rewards.removeWhere((node, _) => node.depth < depth);
@@ -46,24 +44,25 @@ class MTCS<T extends Node<T>> {
       throw Exception('Choose called on a node with no children.');
     }
     // We've not explored any children, just pick a random one.
-    var exploredChildren = _children[node];
+    final exploredChildren = _children[node];
     if (exploredChildren == null) {
-      print("Not explored any children!");
+      print('Not explored any children!');
       return node.randomChild(random)!;
     }
 
     double score(T child) {
-      double visits = _visits[child] ?? 0;
+      final visits = _visits[child] ?? 0;
       if (visits == 0) {
         return double.negativeInfinity;
       }
-      double reward = _rewards[child] ?? 0;
+      final reward = _rewards[child] ?? 0;
       // print(
       //     "${(child as ActionNode).action} reward: ${reward.toStringAsFixed(2)} visits: $visits");
       return reward / visits;
     }
 
-    var choice = exploredChildren.reduce((a, b) => score(a) > score(b) ? a : b);
+    final choice =
+        exploredChildren.reduce((a, b) => score(a) > score(b) ? a : b);
     // print(
     //     "# Choose ${(choice as ActionNode).action} with score ${score(choice).toStringAsPrecision(6)}");
     return choice;
@@ -80,15 +79,15 @@ class MTCS<T extends Node<T>> {
 
   List<T> _select(T node) {
     // Find and unexplored decendent of the node.
-    var path = <T>[];
+    final path = <T>[];
     while (true) {
       path.add(node);
-      var exploredChildren = _children[node] ?? [];
+      final exploredChildren = _children[node] ?? [];
       if (exploredChildren.isEmpty) {
         return path;
       }
       final unexplored =
-          Set.from(exploredChildren).difference(Set.from(_children.keys));
+          Set<T>.from(exploredChildren).difference(Set.from(_children.keys));
       if (unexplored.isNotEmpty) {
         // Should this be a random selection?
         path.add(unexplored.last);
@@ -119,7 +118,7 @@ class MTCS<T extends Node<T>> {
 
   void _backpropagate(List<T> path, double reward) {
     // Update the rewards and visits for each node in the path.
-    for (var node in path.reversed) {
+    for (final node in path.reversed) {
       final existingReward = _rewards[node] ?? 0;
       _rewards[node] = existingReward + reward;
       final existingVisits = _visits[node] ?? 0;
@@ -128,11 +127,11 @@ class MTCS<T extends Node<T>> {
   }
 
   bool _allChildrenExpanded(T node) {
-    var children = _children[node];
+    final children = _children[node];
     if (children == null) {
       return false;
     }
-    return children.every((child) => _children.containsKey(child));
+    return children.every(_children.containsKey);
   }
 
 // UTC is an algorithm from
@@ -142,7 +141,7 @@ class MTCS<T extends Node<T>> {
 
   T _utcSelect(T node) {
     // Select a child of `node` balancing exploration and exploitation.
-    assert(_allChildrenExpanded(node));
+    assert(_allChildrenExpanded(node), 'Not all children expanded');
     // Should this be ln? rather than log? for UCB1?
     final logOfParentVisits = log(_visits[node]!);
 
@@ -152,12 +151,12 @@ class MTCS<T extends Node<T>> {
       // Upper confidence bound for the subtree.
       final visits = _visits[child]!;
       // Expansion tries to continue down promising subtrees.
-      var expansionTerm = _rewards[child]! / visits;
+      final expansionTerm = _rewards[child]! / visits;
       // Exploration tries to preserve log ratio of parent play throughs vs. child playthroughs.
       // If my parent has been visited a lot then my siblings have been
       // so the numerator is large relative to the denominator.
       // which is the number of times I've been visited.
-      var explorationTerm =
+      final explorationTerm =
           explorationWeight * sqrt(logOfParentVisits / visits);
       return expansionTerm + explorationTerm;
     }
@@ -174,6 +173,17 @@ class MTCS<T extends Node<T>> {
 // }
 
 class ActionNode extends Node<ActionNode> {
+  ActionNode({
+    required this.action,
+    required this.state,
+    required this.goal,
+    required this.depth,
+    required this.random,
+  })
+  // Faster to compute the hashcode up front and cache it.
+  // This is possible since everything is immutable.
+  : hashCode =
+            action.hashCode ^ state.hashCode ^ goal.hashCode ^ depth.hashCode;
   // What action was taken from our parent to get here?
   final Action action;
   // Current game state at this Node.
@@ -186,26 +196,14 @@ class ActionNode extends Node<ActionNode> {
   @override
   final int hashCode;
 
-  ActionNode({
-    required this.action,
-    required this.state,
-    required this.goal,
-    required this.depth,
-    required this.random,
-  })
-  // Faster to compute the hashcode up front and cache it.
-  // This is possible since everything is immutable.
-  : hashCode =
-            action.hashCode ^ state.hashCode ^ goal.hashCode ^ depth.hashCode;
-
   @override
   bool get hasChildren => collectChildren().isNotEmpty;
 
   @override
   Iterable<ActionNode> collectChildren() {
     _childrenCache ??= ActionGenerator.possibleActions(state).map((action) {
-      var context = ResolveContext(state, random);
-      var result = action.resolve(context);
+      final context = ResolveContext(state, random);
+      final result = action.resolve(context);
       return ActionNode(
         action: action,
         state: state.copyApplying(result),
@@ -219,7 +217,7 @@ class ActionNode extends Node<ActionNode> {
 
   @override
   ActionNode? randomChild(Random random) {
-    var children = collectChildren();
+    final children = collectChildren();
     return children.elementAt(random.nextInt(children.length));
   }
 
@@ -243,17 +241,18 @@ class ActionNode extends Node<ActionNode> {
 }
 
 class MonteCarloTreeSearchPlanner extends Planner {
+  MonteCarloTreeSearchPlanner(
+    this.goal, {
+    double explorationWeight = 1.4,
+    int? seed,
+  })  : _mtcs =
+            MTCS<ActionNode>(explorationWeight: explorationWeight, seed: seed),
+        _random = Random(seed);
   final int _simulationsPerTurn = 50;
   ActionNode? _root;
   final MTCS<ActionNode> _mtcs;
   final Goal goal;
   final Random _random;
-
-  MonteCarloTreeSearchPlanner(this.goal,
-      {double explorationWeight = 1.4, int? seed})
-      : _mtcs =
-            MTCS<ActionNode>(explorationWeight: explorationWeight, seed: seed),
-        _random = Random(seed);
 
   @override
   Action plan(GameState state) {
@@ -274,7 +273,7 @@ class MonteCarloTreeSearchPlanner extends Planner {
       random: _random,
     );
 
-    for (int i = 0; i < _simulationsPerTurn; i++) {
+    for (var i = 0; i < _simulationsPerTurn; i++) {
       _mtcs.simulate(_root!);
     }
     _root = _mtcs.choose(_root!);
