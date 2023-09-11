@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:dash_craft/action.dart';
 import 'package:dash_craft/game.dart';
+import 'package:dash_craft/logger.dart';
 import 'package:dash_craft/plan/goal.dart';
 import 'package:dash_craft/plan/planner.dart';
 
@@ -46,7 +47,7 @@ class MTCS<T extends Node<T>> {
     // We've not explored any children, just pick a random one.
     final exploredChildren = _children[node];
     if (exploredChildren == null) {
-      print('Not explored any children!');
+      logger.info('Not explored any children!');
       return node.randomChild(random)!;
     }
 
@@ -80,9 +81,10 @@ class MTCS<T extends Node<T>> {
   List<T> _select(T node) {
     // Find and unexplored decendent of the node.
     final path = <T>[];
+    var current = node;
     while (true) {
-      path.add(node);
-      final exploredChildren = _children[node] ?? [];
+      path.add(current);
+      final exploredChildren = _children[current] ?? [];
       if (exploredChildren.isEmpty) {
         return path;
       }
@@ -93,7 +95,7 @@ class MTCS<T extends Node<T>> {
         path.add(unexplored.last);
         return path;
       }
-      node = _utcSelect(node); // decend a layer deeper
+      current = _utcSelect(current); // decend a layer deeper
     }
   }
 
@@ -109,11 +111,12 @@ class MTCS<T extends Node<T>> {
     // Randomly decend the choice tree until we reach a leaf
     // or hit our max depth and return the reward.
     var depthRemaining = maxSimulationDepth;
-    while (!node.isLeaf && depthRemaining > 0) {
+    var current = node;
+    while (!current.isLeaf && depthRemaining > 0) {
       depthRemaining--;
-      node = node.randomChild(random)!;
+      current = current.randomChild(random)!;
     }
-    return node.reward;
+    return current.reward;
   }
 
   void _backpropagate(List<T> path, double reward) {
@@ -229,7 +232,10 @@ class ActionNode extends Node<ActionNode> {
     return 'ActionNode{action: $action, state: $state, reward: $reward}';
   }
 
+  // This is OK for now, we're only mutating _childrenCache, which we
+  // do not compare.
   @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ActionNode &&

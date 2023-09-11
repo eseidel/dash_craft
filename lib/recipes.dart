@@ -202,7 +202,7 @@ List<Recipe> recipes = const [
   ),
 ];
 
-// FIXME: This function can't cover all items as designed.
+// TODO(eseidel): This function can't cover all items as designed.
 // It does not cover minion actions (which are a source of items).
 // e.g. gathering, hunting, exporing, etc.
 Iterable<Recipe> recipesWithOutput(Item output) sync* {

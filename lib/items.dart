@@ -37,7 +37,6 @@ class Item {
   final ItemKind kind;
   // Is everything allowed to stack?
   // Are things which can't stack just 1 offs?
-  final int stackSize = 100;
   final int durability;
   final int? energy;
   final int? gatherSkill;

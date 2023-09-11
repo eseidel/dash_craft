@@ -216,7 +216,7 @@ class SendMinion extends Action {
 
   @override
   double outputChance(ItemCount count, Skills skills) {
-    // FIXME: Some gathers should return multiple items.
+    // TODO(eseidel): Some gathers should return multiple items.
     if (count.count != 1) return 0;
 
     final availableItems = availableGatherItems(skills);
@@ -238,9 +238,7 @@ class SendMinion extends Action {
 
   Iterable<Item> availableGatherItems(Skills skills) {
     return gatherItems.where((i) {
-      return i.gatherSkill != null
-          ? i.gatherSkill! <= skills[Skill.gather]
-          : false;
+      return i.gatherSkill != null && i.gatherSkill! <= skills[Skill.gather];
     });
   }
 
@@ -275,13 +273,12 @@ class SendMinion extends Action {
     switch (task) {
       case MinionTask.gather:
         return gatherResult(context);
-      default:
+      case MinionTask.lumberjack:
+      case MinionTask.hunt:
+      case MinionTask.fish:
+      case MinionTask.treasureHunt:
         throw UnimplementedError();
     }
-    // lumberjack
-    // hunt
-    // fish
-    // treasure
   }
 
   @override
@@ -303,7 +300,7 @@ class Feed extends Action {
 
   @override
   int maxOutputCount(Item item, Skills skills) {
-    // FIXME: Handle eating things in shells, pots, etc.
+    // TODO(eseidel): Handle eating things in shells, pots, etc.
     return 0;
   }
 

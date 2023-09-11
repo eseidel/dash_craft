@@ -57,6 +57,7 @@ class ActionGenerator {
 // Mutable, does planning.
 // Input a goal.
 // Output is successive actions to achieve the goal.
+// ignore: one_member_abstracts
 abstract class Planner {
   Action plan(GameState state);
 }

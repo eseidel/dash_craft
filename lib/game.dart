@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:dash_craft/action.dart';
 import 'package:dash_craft/items.dart';
+import 'package:dash_craft/logger.dart';
 import 'package:meta/meta.dart';
 
 enum Skill {
@@ -217,7 +218,7 @@ class Game {
     final result = action.resolve(context);
     // print(result);
     if (result.action is Craft) {
-      print('CRAFT ${(result.action as Craft).recipe.outputs}');
+      logger.info('CRAFT ${(result.action as Craft).recipe.outputs}');
     }
     state = state.copyApplying(result);
   }

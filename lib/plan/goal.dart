@@ -60,7 +60,7 @@ Iterable<Action> actionsWithOutput(Item output) sync* {
     yield Craft(recipe: recipe);
   }
   if (output.gatherSkill != null) {
-    // FIXME: Should have a specific output?
+    // TODO(eseidel): Should have a specific output?
     yield SendMinion();
   }
 }
