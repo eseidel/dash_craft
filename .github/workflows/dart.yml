@@ -13,12 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Installs both Flutter and Dart
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # or: 'beta', 'dev' or 'master'
 
-      - name: Install dependencies
-        run: flutter packages get
+      # Run tests first since it will do the dart pub get for us.
+      - name: Run tests with coverage
+        run: ./coverage.sh
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
@@ -26,9 +28,6 @@ jobs:
       # Consider passing '--fatal-infos' for slightly stricter analysis.
       - name: Analyze project source
         run: dart analyze
-
-      - name: Run tests with coverage
-        run: ./coverage.sh
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3

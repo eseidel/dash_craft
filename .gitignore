@@ -4,6 +4,8 @@
 .dart_tool/
 .packages
 build/
+# Only applications should commit pubspec.lock
+pubspec.lock
 
 # Created by --coverage option to dart test
 coverage/
