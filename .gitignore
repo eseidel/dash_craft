@@ -5,6 +5,9 @@
 .packages
 build/
 
+# Created by --coverage option to dart test
+coverage/
+
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
 doc/api/
