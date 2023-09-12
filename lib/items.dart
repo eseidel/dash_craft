@@ -121,50 +121,49 @@ const primativeAxe = Item.tool(name: 'Primative Axe', durability: 15);
 const primativeHammer = Item.tool(name: 'Primative Hammer', durability: 15);
 const primativeKnife = Item.tool(name: 'Primative Knife', durability: 15);
 
-
-// Primitive axe.png	Primitive Axe	Sharp Stone	Vine	Stick	Hand	0		15		1	
-// Primitive hammer.png	Primitive Hammer	Stone	Vine	Stick	Hand	5		15		1	
-// Primitive knife.png	Primitive Knife	Sharp Stone	Stick		Stone	5		15	2	1	
-// Stone Axe Head.png	Stone Axe Head	Stone			Sharp Stone	10		10	1		
-// Vine Rope.png	Vine Rope	Vine x2			Hand	10	1			2	
-// Stone Axe	Stone Axe Head	Stick		Stone	10					
-// Primitive Spear	Sharp Stone	Vine Rope	Stick	Hand	15		15	3	1	
-// Small Fire	Stick	Bark Strips		Hand	15		1		5	
+// Primitive axe.png	Primitive Axe	Sharp Stone	Vine	Stick	Hand	0		15		1
+// Primitive hammer.png	Primitive Hammer	Stone	Vine	Stick	Hand	5		15		1
+// Primitive knife.png	Primitive Knife	Sharp Stone	Stick		Stone	5		15	2	1
+// Stone Axe Head.png	Stone Axe Head	Stone			Sharp Stone	10		10	1
+// Vine Rope.png	Vine Rope	Vine x2			Hand	10	1			2
+// Stone Axe	Stone Axe Head	Stick		Stone	10
+// Primitive Spear	Sharp Stone	Vine Rope	Stick	Hand	15		15	3	1
+// Small Fire	Stick	Bark Strips		Hand	15		1		5
 // Camp Fire	Stick x10	Stone x10		Small Fire	15				10	Max Heat: 1000
-// Sling	Light Fur	Bark Strips x5		Hand	20			4	1	
-// Bone Hook	Bone			Primitive Knife	20					
+// Sling	Light Fur	Bark Strips x5		Hand	20			4	1
+// Bone Hook	Bone			Primitive Knife	20
 // Primitive Fishing Rod	Bone Hook	Vine Rope		Hand	30					Max Bait: 25
 // Bonfire	Stick x20	Stone x20		Small Fire	25				20	Max Heat: 2000
-// Arrow	Bone	Stick	Feather	Stone	30					
-// Basic hammer.png	Basic hammer	Stick	Vine Rope	Stone	Primitive Hammer	35					
-// Basic Knife	Stick	Vine Rope	Sharp Stone	Primitive Hammer	35			3		
-// Bark Rope	Bark Strips x2			Hand	35					
+// Arrow	Bone	Stick	Feather	Stone	30
+// Basic hammer.png	Basic hammer	Stick	Vine Rope	Stone	Primitive Hammer	35
+// Basic Knife	Stick	Vine Rope	Sharp Stone	Primitive Hammer	35			3
+// Bark Rope	Bark Strips x2			Hand	35
 // Wooden Fishing Rod	Primitive Fishing Rod	Stick	Worm	Hand	40					Max Bait: 50
-// Primitive Claw	Sharp Stone x2	Stick	Vine	Hand	45	5	15		1	
-// Sharp Bone	Bone			Primitive Hammer	45	5	15	2		
-// Sharp Shiny Stone	Shiny Stone			Basic hammer	50		100	3		
-// Advanced Hammer	Peeled Stick	Vine Rope	Stone	Hammer	55	10	50			
-// Advanced Axe	Peeled Stick	Axe Head		Hammer	55	10	50			
-// Advanced Spear	Sharp Bone	Peeled Stick	Vine Rope	Hand	55	10	50	5		
-// Advanced Knife	Peeled Stick	Vine Rope	Sharp Bone	Hammer	55	10	50	4		
+// Primitive Claw	Sharp Stone x2	Stick	Vine	Hand	45	5	15		1
+// Sharp Bone	Bone			Primitive Hammer	45	5	15	2
+// Sharp Shiny Stone	Shiny Stone			Basic hammer	50		100	3
+// Advanced Hammer	Peeled Stick	Vine Rope	Stone	Hammer	55	10	50
+// Advanced Axe	Peeled Stick	Axe Head		Hammer	55	10	50
+// Advanced Spear	Sharp Bone	Peeled Stick	Vine Rope	Hand	55	10	50	5
+// Advanced Knife	Peeled Stick	Vine Rope	Sharp Bone	Hammer	55	10	50	4
 // Advanced Fishing Rod	Primitive Fishing Rod	Stick	Fish Meat	Hand	55					Max Bait: 100
-// Stacked Bone	Bone x10	Bark Rope x2		Hand	60					
-// Brush	Peeled Stick	Bark Rope	Feather x10	Hand	60		1		1	
+// Stacked Bone	Bone x10	Bark Rope x2		Hand	60
+// Brush	Peeled Stick	Bark Rope	Feather x10	Hand	60		1		1
 // Kiln	Stick x20	Mud Brick x20		Small Fire	60					Max Heat: 3000
-// Trowel Head	Sharp Stone			Hammer	60					
-// Colored Brush	Red Berry x5	Lettuce x5	Blue Berry x5	Brush	65	10	25		1	
-// Basic Trowel	Trowel Head	Vine	Stick	Hammer	65		25		1	
-// Basic Claw	Sharp Stone x2	Stick	Vine Rope	Hammer	65		25		1	
-// Basic Torch	Stick	Light Fur	Charcoal	Fire	65					
+// Trowel Head	Sharp Stone			Hammer	60
+// Colored Brush	Red Berry x5	Lettuce x5	Blue Berry x5	Brush	65	10	25		1
+// Basic Trowel	Trowel Head	Vine	Stick	Hammer	65		25		1
+// Basic Claw	Sharp Stone x2	Stick	Vine Rope	Hammer	65		25		1
+// Basic Torch	Stick	Light Fur	Charcoal	Fire	65
 // Epic Fishing Rod	Primitive Fishing Rod	Peeled Stick	Fish Meat	Hand	70					Max Bait: 200
-// Epic Axe	Peeled Stick	Bark Rope	Axe Head	Hammer	70					
-// Epic Hammer	Peeled Stick	Bark Rope	Stone	Hammer	70					
-// Epic Knife	Peeled Stick	Bark Rope	Sharp Bone	Hammer	70			5		
-// Epic Spear	Sharp Bone	Peeled Stick	Bark Rope	Hand	70			6		
+// Epic Axe	Peeled Stick	Bark Rope	Axe Head	Hammer	70
+// Epic Hammer	Peeled Stick	Bark Rope	Stone	Hammer	70
+// Epic Knife	Peeled Stick	Bark Rope	Sharp Bone	Hammer	70			5
+// Epic Spear	Sharp Bone	Peeled Stick	Bark Rope	Hand	70			6
 // Furnace	Stone x80	Mud Brick x80		Small Fire	80					Max Heat: 5000
-// Advanced Trowel	Trowel Head	Vine Rope	Peeled Stick	Basic hammer	80					
-// Advanced Claw	Sharp Stone x2	Peeled Stick	Vine Rope	Primitive Hammer	80					
-// Epic Claw	Sharp Stone x2	Peeled Stick	Bark Rope	Basic hammer	85					
-// Epic Trowel	Trowel Head	Bark Rope	Peeled Stick	Advanced Hammer	90					
-// Tactical Tool	Peeled Stick	Bark Rope x3	Stone x6	Epic Hammer	100		100			
-// Tactical Shiny Tool	Peeled Stick	Bark Rope x3	Shiny Stone x6	Epic Hammer	120		1000		1	
+// Advanced Trowel	Trowel Head	Vine Rope	Peeled Stick	Basic hammer	80
+// Advanced Claw	Sharp Stone x2	Peeled Stick	Vine Rope	Primitive Hammer	80
+// Epic Claw	Sharp Stone x2	Peeled Stick	Bark Rope	Basic hammer	85
+// Epic Trowel	Trowel Head	Bark Rope	Peeled Stick	Advanced Hammer	90
+// Tactical Tool	Peeled Stick	Bark Rope x3	Stone x6	Epic Hammer	100		100
+// Tactical Shiny Tool	Peeled Stick	Bark Rope x3	Shiny Stone x6	Epic Hammer	120		1000		1
