@@ -36,3 +36,4 @@ jobs:
         uses: bluefireteam/flutter-gh-pages@v7
         with:
           workingDir: packages/ui
+          baseHref: /dash_craft/
