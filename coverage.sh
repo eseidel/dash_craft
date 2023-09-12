@@ -7,7 +7,6 @@
 dart pub global activate coverage
 dart pub global activate combine_coverage
 
-# When we have flutter packages we will add a separate array for those.
 DART_PACKAGES='logic'
 
 for PACKAGE_DIR in $DART_PACKAGES
@@ -19,6 +18,17 @@ do
     dart pub global run coverage:format_coverage --lcov --in=coverage \
         --out=coverage/lcov.info --packages=.dart_tool/package_config.json \
         --check-ignore
+    cd ../..
+done
+
+FLUTTER_PACKAGES='ui'
+
+for PACKAGE_DIR in $FLUTTER_PACKAGES
+do
+    echo $PACKAGE_DIR
+    cd packages/$PACKAGE_DIR
+    flutter packages get
+    flutter test --coverage
     cd ../..
 done
 
