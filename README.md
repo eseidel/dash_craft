@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/eseidel/dash_craft/graph/badge.svg?token=4X66HK8R8A)](https://codecov.io/gh/eseidel/dash_craft)
+
 # dash_craft
  Just playing around.
 
