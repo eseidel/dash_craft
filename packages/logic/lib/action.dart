@@ -71,8 +71,11 @@ class ResolveContext {
 
   Skills get skills => state.skills;
 
-  Skills? gatherSkillChange(Item item) {
-    final skillDiff = skills[Skill.gather] - item.gatherSkill!;
+  Skills? gatherSkillChange(MinionTask task) {
+    if (task.type != TaskType.gather) {
+      throw ArgumentError('Only gather tasks can change gather skill');
+    }
+    final skillDiff = skills[Skill.gather] - task.minSkill;
     if (skillDiff >= 40) {
       return null;
     }
@@ -92,7 +95,9 @@ class ResolveContext {
   }
 
   double nextDouble() => random.nextDouble();
-  Item pickOne(List<Item> items) => items[random.nextInt(items.length)];
+
+  MinionTask pickTask(List<MinionTask> tasks) =>
+      tasks[random.nextInt(tasks.length)];
 }
 
 @immutable
@@ -229,8 +234,14 @@ class SendMinion extends Action {
     return true;
   }
 
+  Iterable<MinionTask> availableGatherTasks(Skills skills) {
+    return doc.tasks
+        .withType(TaskType.gather)
+        .where((t) => t.minSkill <= skills[Skill.gather]);
+  }
+
   Iterable<Item> availableGatherItems(Skills skills) {
-    return doc.tasks.withType(TaskType.gather).map((t) => t.item);
+    return availableGatherTasks(skills).map((t) => t.item);
   }
 
   int gatherTimeMs(ResolveContext context) {
@@ -241,20 +252,20 @@ class SendMinion extends Action {
   }
 
   ActionResult gatherResult(ResolveContext context) {
-    final items = availableGatherItems(context.skills);
-    final item = context.pickOne(items.toList());
+    final tasks = availableGatherTasks(context.skills);
+    final task = context.pickTask(tasks.toList());
 
-    final addItems = [item];
+    final addItems = [task.item];
     // Half the time give double?
     if (context.nextDouble() < 0.5) {
-      addItems.add(item);
+      addItems.add(task.item);
     }
 
     return ActionResult(
       action: this,
       addItems: addItems,
       timeInMilliseconds: gatherTimeMs(context),
-      skillChange: context.gatherSkillChange(item),
+      skillChange: context.gatherSkillChange(task),
       minionEnergyChange: -1,
     );
   }
