@@ -48,9 +48,10 @@ class TaskSet {
 
   factory TaskSet.fromYaml(YamlMap yaml, ItemSet items) {
     final tasks = <MinionTask>[];
-    for (final taskTypeString in (yaml['tasks'] as YamlMap).keys) {
+    final tasksMap = yaml['tasks'] as YamlMap;
+    for (final taskTypeString in tasksMap.keys) {
       final taskType = TaskType.fromString(taskTypeString as String);
-      for (final taskYaml in yaml['tasks'][taskTypeString] as YamlList) {
+      for (final taskYaml in tasksMap[taskTypeString] as YamlList) {
         final taskMap = taskYaml as YamlMap;
         final task = MinionTask.fromYaml(taskMap, taskType, items);
         tasks.add(task);
