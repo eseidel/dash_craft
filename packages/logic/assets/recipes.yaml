@@ -4,4 +4,4 @@ recipes:
   out:
     "Peeled Banana": 1
   tool: "hand"
-  skill: "foodPrep"
+  skill: "mealPreparing"

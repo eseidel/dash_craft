@@ -25,9 +25,9 @@ enum Skill {
   treasureHunting('Treasure Hunting'),
   communication('Communication');
 
-  const Skill(this.name);
+  const Skill(this.displayName);
 
-  final String name;
+  final String displayName;
 
   static List<Skill> get mySkills =>
       Skill.values.where((s) => s.index < Skill.gathering.index).toList();
