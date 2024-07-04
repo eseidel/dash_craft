@@ -1,5 +1,5 @@
-name: dash_craft
-description: Just playing around.
+name: logic
+description: Core logic for a "Dawn Of Crafting" like application.
 version: 1.0.0+1
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -8,7 +8,8 @@ environment:
 
 dependencies:
   args: ^2.3.1
-  collection: ^1.19.0
+  # Match flutter's pinned collection package version.
+  collection: ^1.18.0
   logging: ^1.2.0
   meta: ^1.7.0
   yaml: ^3.1.2
@@ -16,3 +17,7 @@ dependencies:
 dev_dependencies:
   test: ^1.16.8
   very_good_analysis: ^5.1.0
+
+flutter:
+  assets:
+    - assets/

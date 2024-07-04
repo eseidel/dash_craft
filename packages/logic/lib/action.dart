@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:dash_craft/doc.dart';
-import 'package:dash_craft/game.dart';
+import 'package:logic/doc.dart';
+import 'package:logic/game.dart';
 import 'package:meta/meta.dart';
 
 // Actions types

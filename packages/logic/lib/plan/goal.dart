@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:dash_craft/action.dart';
-import 'package:dash_craft/doc.dart';
-import 'package:dash_craft/game.dart';
-import 'package:dash_craft/plan/planner.dart';
+import 'package:logic/action.dart';
+import 'package:logic/doc.dart';
+import 'package:logic/game.dart';
+import 'package:logic/plan/planner.dart';
 
 class Goal {
   Goal(this.itemToCount);

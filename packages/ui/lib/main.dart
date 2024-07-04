@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:logic/doc.dart';
+import 'package:yaml/yaml.dart';
 
 const inputSize = 3;
 const inventorySize = 25;
@@ -18,53 +21,17 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Dash Craft'),
+      home: const MyHomePage(),
     );
   }
 }
 
-// MVP
-// Gather
-// Inventory (click to destroy?)
-
-// No:
-// Gather delay
-// Stacks
-// Energy
-// No drag and drop
-// No ordering?
-
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({required this.title, super.key});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-
-enum Item {
-  banana,
-  peeledBanana,
-}
-
-class Recipe {
-  const Recipe({
-    required this.name,
-    required this.inputs,
-    required this.outputs,
-  });
-
-  final String name;
-  final List<Item> inputs;
-  final List<Item> outputs;
-}
-
-const peelBanana = Recipe(
-  name: 'Peel Banana',
-  inputs: [Item.banana],
-  outputs: [Item.peeledBanana],
-);
 
 class TappableItem extends StatelessWidget {
   const TappableItem({required this.item, required this.onTap, super.key});
@@ -196,24 +163,98 @@ class ErrorMessage extends StatelessWidget {
   }
 }
 
-Recipe? recipeFor(List<Item> items) {
-  if (items.length != 1) {
-    return null;
+class GameView extends StatelessWidget {
+  const GameView({
+    required this.inputs,
+    required this.inventory,
+    required this.errorMessage,
+    required this.onGather,
+    required this.onInventoryTap,
+    required this.onInputTap,
+    required this.onCraft,
+    required this.recipeFor,
+    super.key,
+  });
+
+  final List<Item> inputs;
+  final List<Item> inventory;
+  final String? errorMessage;
+  final void Function() onGather;
+  final void Function(Item) onInventoryTap;
+  final void Function(Item) onInputTap;
+  final void Function(List<Item> inputs) onCraft;
+  final Recipe? Function(List<Item> inputs) recipeFor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(onPressed: onGather, child: const Text('Gather')),
+          ErrorMessage(message: errorMessage),
+          Expanded(
+            child: CraftingBench(
+              inputs: inputs,
+              onCraft: onCraft,
+              onInputTap: onInputTap,
+              recipe: recipeFor(inputs),
+            ),
+          ),
+          Expanded(
+            child: InventoryGrid(
+              inventory: inventory,
+              onTap: onInventoryTap,
+            ),
+          ),
+        ],
+      ),
+    );
   }
-  if (items[0] == Item.banana) {
-    return peelBanana;
-  }
-  return null;
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final inputs = <Item>[];
   final inventory = <Item>[];
+  late final DOC? _doc;
   String? errorMessage;
+
+  bool isLoaded() => _doc != null;
+  Rules get rules => _doc!;
+  DOC get doc => _doc!;
+
+  @override
+  void initState() {
+    super.initState();
+    loadAssets(); // async, not awaited
+  }
+
+  Future<void> loadAssets() async {
+    final itemsText =
+        await rootBundle.loadString('packages/logic/assets/items.yaml');
+    final recipesText =
+        await rootBundle.loadString('packages/logic/assets/recipes.yaml');
+    final items = ItemSet.fromYaml(loadYaml(itemsText) as YamlMap);
+    final recipes = RecipeSet.fromYaml(loadYaml(recipesText) as YamlMap, items);
+    final rules = DOC(items: items, recipes: recipes);
+    setState(() {
+      _doc = rules;
+    });
+  }
+
+  Recipe? recipeFor(List<Item> items) {
+    if (items.length != 1) {
+      return null;
+    }
+    if (items[0] == doc.banana) {
+      return doc.recipes['Peeled Banana'];
+    }
+    return null;
+  }
 
   void onGather() {
     setState(() {
-      inventory.add(Item.banana);
+      inventory.add(doc.banana);
     });
   }
 
@@ -253,39 +294,26 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     setState(() {
       inputs.clear();
-      inventory.addAll(recipe.outputs);
+      for (final entry in recipe.outputs.entries) {
+        for (var i = 0; i < entry.value; i++) {
+          inventory.add(entry.key);
+        }
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(onPressed: onGather, child: const Text('Gather')),
-            ErrorMessage(message: errorMessage),
-            Expanded(
-              child: CraftingBench(
-                inputs: inputs,
-                onCraft: onCraft,
-                onInputTap: onInputTap,
-                recipe: recipeFor(inputs),
-              ),
-            ),
-            Expanded(
-              child: InventoryGrid(
-                inventory: inventory,
-                onTap: onInventoryTap,
-              ),
-            ),
-          ],
-        ),
+      body: GameView(
+        inputs: inputs,
+        inventory: inventory,
+        errorMessage: errorMessage,
+        onGather: onGather,
+        onInventoryTap: onInventoryTap,
+        onInputTap: onInputTap,
+        onCraft: onCraft,
+        recipeFor: recipeFor,
       ),
     );
   }

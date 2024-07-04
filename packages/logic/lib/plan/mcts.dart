@@ -1,10 +1,10 @@
 import 'dart:math';
 
-import 'package:dash_craft/action.dart';
-import 'package:dash_craft/game.dart';
-import 'package:dash_craft/logger.dart';
-import 'package:dash_craft/plan/goal.dart';
-import 'package:dash_craft/plan/planner.dart';
+import 'package:logic/action.dart';
+import 'package:logic/game.dart';
+import 'package:logic/logger.dart';
+import 'package:logic/plan/goal.dart';
+import 'package:logic/plan/planner.dart';
 
 // Inspired by https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
 

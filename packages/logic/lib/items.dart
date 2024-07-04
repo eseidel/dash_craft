@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:yaml/yaml.dart';
 
 class Item {
@@ -20,9 +18,7 @@ class Item {
 class ItemSet {
   ItemSet._(this._byName);
 
-  factory ItemSet.fromYaml(String filename) {
-    final contents = File(filename).readAsStringSync();
-    final yaml = loadYaml(contents) as YamlMap;
+  factory ItemSet.fromYaml(YamlMap yaml) {
     final byName = <String, Item>{};
     for (final itemYaml in yaml['items'] as YamlList) {
       final itemMap = itemYaml as YamlMap;

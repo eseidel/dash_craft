@@ -1,10 +1,13 @@
 // Dawn of Crafting item names.
 
-import 'package:dash_craft/items.dart';
-import 'package:dash_craft/recipes.dart';
+import 'dart:io';
 
-export 'package:dash_craft/items.dart';
-export 'package:dash_craft/recipes.dart';
+import 'package:logic/items.dart';
+import 'package:logic/recipes.dart';
+import 'package:yaml/yaml.dart';
+
+export 'package:logic/items.dart';
+export 'package:logic/recipes.dart';
 
 class Rules {
   const Rules({required this.items, required this.recipes});
@@ -31,10 +34,17 @@ class DOC extends Rules {
         peeledBanana = items['Peeled Banana'],
         goop = items['Goop'];
 
-  factory DOC.load() {
-    final items = ItemSet.fromYaml('assets/items.yaml');
-    final recipes = RecipeSet.fromYaml('assets/recipes.yaml', items);
+  factory DOC.load({Uri? itemsUri, Uri? recipesUri}) {
+    itemsUri ??= Uri.parse('assets/items.yaml');
+    recipesUri ??= Uri.parse('assets/recipes.yaml');
+    final items = ItemSet.fromYaml(_loadYaml(itemsUri));
+    final recipes = RecipeSet.fromYaml(_loadYaml(recipesUri), items);
     return DOC(items: items, recipes: recipes);
+  }
+
+  static YamlMap _loadYaml(Uri uri) {
+    final contents = File.fromUri(uri).readAsStringSync();
+    return loadYaml(contents) as YamlMap;
   }
 
   final Item banana;

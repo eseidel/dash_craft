@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
-import 'package:dash_craft/doc.dart';
-import 'package:dash_craft/game.dart';
+import 'package:logic/doc.dart';
+import 'package:logic/game.dart';
 import 'package:meta/meta.dart';
 import 'package:yaml/yaml.dart';
 
@@ -62,21 +60,24 @@ class Recipe {
     required this.failureOutputs,
   });
 
-  // const Recipe.food({
-  //   required this.outputs,
-  //   required this.inputs,
-  //   required this.tool,
-  //   required this.skillRequired,
-  //   this.failureGivesGoop = true,
-  // }) : skill = Skill.foodPrep;
-
-  // const Recipe.tool({
-  //   required this.outputs,
-  //   required this.inputs,
-  //   required this.tool,
-  //   required this.skillRequired,
-  // })  : skill = Skill.toolCrafting,
-  //       failureGivesGoop = false;
+  factory Recipe.fromYaml(YamlMap map, ItemSet items) {
+    final inputs = (map['in'] as Map)
+        .map((key, value) => MapEntry(items[key as String], value as int));
+    final outputs = (map['out'] as Map)
+        .map((key, value) => MapEntry(items[key as String], value as int));
+    return Recipe(
+      name: map['name'] as String? ?? outputs.keys.first.name,
+      inputs: inputs,
+      outputs: outputs,
+      tool: MeTool.fromString(map['tool'] as String),
+      skill: Skill.fromString(map['skill'] as String),
+      skillRequired: map['min_skill'] as int? ?? 0,
+      failureOutputs: ((map['fail'] as List?) ?? [])
+          .cast<String>()
+          .map((name) => items[name])
+          .toList(),
+    );
+  }
 
   final String name;
   final Map<Item, int> inputs;
@@ -109,28 +110,10 @@ class Recipe {
 class RecipeSet {
   RecipeSet._(this._byName);
 
-  factory RecipeSet.fromYaml(String filename, ItemSet items) {
-    final contents = File(filename).readAsStringSync();
-    final yaml = loadYaml(contents) as YamlMap;
+  factory RecipeSet.fromYaml(YamlMap yaml, ItemSet items) {
     final byName = <String, Recipe>{};
     for (final recipeYaml in yaml['recipes'] as YamlList) {
-      final recipeMap = recipeYaml as YamlMap;
-      final inputs = (recipeMap['in'] as Map)
-          .map((key, value) => MapEntry(items[key as String], value as int));
-      final outputs = (recipeMap['out'] as Map)
-          .map((key, value) => MapEntry(items[key as String], value as int));
-      final recipe = Recipe(
-        name: recipeMap['name'] as String? ?? outputs.keys.first.name,
-        inputs: inputs,
-        outputs: outputs,
-        tool: MeTool.fromString(recipeMap['tool'] as String),
-        skill: Skill.fromString(recipeMap['skill'] as String),
-        skillRequired: recipeMap['min_skill'] as int? ?? 0,
-        failureOutputs: ((recipeMap['fail'] as List?) ?? [])
-            .cast<String>()
-            .map((name) => items[name])
-            .toList(),
-      );
+      final recipe = Recipe.fromYaml(recipeYaml as YamlMap, items);
       byName[recipe.name] = recipe;
     }
     return RecipeSet._(byName);

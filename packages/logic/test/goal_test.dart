@@ -1,6 +1,6 @@
-import 'package:dash_craft/game.dart';
-import 'package:dash_craft/items.dart';
-import 'package:dash_craft/plan/goal.dart';
+import 'package:logic/game.dart';
+import 'package:logic/items.dart';
+import 'package:logic/plan/goal.dart';
 import 'package:test/test.dart';
 
 void main() {

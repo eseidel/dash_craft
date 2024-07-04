@@ -10,6 +10,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
+  logic:
+    path: ../logic
+  yaml: ^3.1.2
 
 dev_dependencies:
   flutter_test:
