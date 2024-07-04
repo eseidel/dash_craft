@@ -263,6 +263,8 @@ class GameView extends StatelessWidget {
     required this.onInputTap,
     required this.onCraft,
     required this.recipe,
+    required this.onShowMySkills,
+    required this.onShowMinionSkills,
     super.key,
   });
 
@@ -273,6 +275,8 @@ class GameView extends StatelessWidget {
   final void Function(Item) onInventoryTap;
   final void Function(Item) onInputTap;
   final void Function(List<Item> inputs) onCraft;
+  final void Function() onShowMySkills;
+  final void Function() onShowMinionSkills;
   final Recipe? recipe;
 
   @override
@@ -281,6 +285,18 @@ class GameView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: onShowMySkills,
+                child: const Text('Me'),
+              ),
+              ElevatedButton(
+                onPressed: onShowMinionSkills,
+                child: const Text('Minion'),
+              ),
+            ],
+          ),
           ElevatedButton(onPressed: onGather, child: const Text('Gather')),
           ErrorMessage(message: errorMessage),
           Expanded(
@@ -396,6 +412,24 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void onShowMySkills() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return const SkillSheet(title: 'My Skills');
+      },
+    );
+  }
+
+  void onShowMinionSkills() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return const SkillSheet(title: 'Minion Skills');
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -408,6 +442,35 @@ class _MyHomePageState extends State<MyHomePage> {
         onInputTap: onInputTap,
         onCraft: onCraft,
         recipe: _recipeFor(inputs),
+        onShowMySkills: onShowMySkills,
+        onShowMinionSkills: onShowMinionSkills,
+      ),
+    );
+  }
+}
+
+class SkillSheet extends StatelessWidget {
+  const SkillSheet({required this.title, super.key});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200,
+      color: Colors.amber,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(title),
+            ElevatedButton(
+              child: const Text('Close BottomSheet'),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
       ),
     );
   }
