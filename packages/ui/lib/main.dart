@@ -172,7 +172,7 @@ class GameView extends StatelessWidget {
     required this.onInventoryTap,
     required this.onInputTap,
     required this.onCraft,
-    required this.recipeFor,
+    required this.recipe,
     super.key,
   });
 
@@ -183,7 +183,7 @@ class GameView extends StatelessWidget {
   final void Function(Item) onInventoryTap;
   final void Function(Item) onInputTap;
   final void Function(List<Item> inputs) onCraft;
-  final Recipe? Function(List<Item> inputs) recipeFor;
+  final Recipe? recipe;
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +198,7 @@ class GameView extends StatelessWidget {
               inputs: inputs,
               onCraft: onCraft,
               onInputTap: onInputTap,
-              recipe: recipeFor(inputs),
+              recipe: recipe,
             ),
           ),
           Expanded(
@@ -216,20 +216,20 @@ class GameView extends StatelessWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final inputs = <Item>[];
   final inventory = <Item>[];
-  late final DOC? _doc;
+  late final DOC? _rules;
   String? errorMessage;
 
-  bool isLoaded() => _doc != null;
-  Rules get rules => _doc!;
-  DOC get doc => _doc!;
+  bool isLoaded() => _rules != null;
+  Rules get rules => _rules!;
+  DOC get doc => _rules!;
 
   @override
   void initState() {
     super.initState();
-    loadAssets(); // async, not awaited
+    loadRules(); // async, not awaited
   }
 
-  Future<void> loadAssets() async {
+  Future<void> loadRules() async {
     final itemsText =
         await rootBundle.loadString('packages/logic/assets/items.yaml');
     final recipesText =
@@ -238,11 +238,11 @@ class _MyHomePageState extends State<MyHomePage> {
     final recipes = RecipeSet.fromYaml(loadYaml(recipesText) as YamlMap, items);
     final rules = DOC(items: items, recipes: recipes);
     setState(() {
-      _doc = rules;
+      _rules = rules;
     });
   }
 
-  Recipe? recipeFor(List<Item> items) {
+  Recipe? _recipeFor(List<Item> items) {
     if (items.length != 1) {
       return null;
     }
@@ -254,6 +254,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onGather() {
     setState(() {
+      // TODO(eseidel): Gather based on rules + current state.
       inventory.add(doc.banana);
     });
   }
@@ -285,7 +286,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onCraft(List<Item> inputs) {
-    final recipe = recipeFor(inputs);
+    // TODO(eseidel): Craft based on rules + current state.
+    final recipe = _recipeFor(inputs);
     if (recipe == null) {
       setState(() {
         errorMessage = 'No recipe found';
@@ -313,7 +315,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onInventoryTap: onInventoryTap,
         onInputTap: onInputTap,
         onCraft: onCraft,
-        recipeFor: recipeFor,
+        recipe: _recipeFor(inputs),
       ),
     );
   }

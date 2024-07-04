@@ -7,5 +7,3 @@ pubspec.lock
 
 # Created by --coverage option to dart test
 coverage/
-
-doc_assets/
