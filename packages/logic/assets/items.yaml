@@ -1,8 +1,12 @@
 items:
 - name: 'Banana'
-  energy: 10
+  energy: 1
 - name: 'Peeled Banana'
   energy: 5
 - name: 'Stone'
 - name: 'Goop'
   energy: -1
+- name: 'Orange'
+  energy: 2
+- name: 'Coconut'
+  energy: -2

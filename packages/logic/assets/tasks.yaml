@@ -1,0 +1,44 @@
+# Tasks Minion can perform.
+tasks:
+  gather: 
+  - item: "Banana"
+    min_skill: 0
+  - item: "Orange"
+    min_skill: 0
+  - item: "Coconut"
+    min_skill: 5
+  # - item: "Stone"
+  #   min_skill: 10
+  # - item: "Peanut"
+  #   min_skill: 15
+  # - item: "Blue Berry"
+  #   min_skill: 20
+  # - item: "Red Berry"
+  #   min_skill: 20
+  # - item: "Vine"
+  #   min_skill: 25
+  # - item: "Stick"
+  #   min_skill: 25
+  # - item: "Walnut"
+  #   min_skill: 30
+  # - item: "Chestnut"
+  #   min_skill: 30
+  # - item: "Letuce"
+  #   min_skill: 35
+  # - item: "Tomato"
+  #   min_skill: 40
+  # - item: "Carrot"
+  #   min_skill: 45
+  # - item: "Eggplant"
+  #   min_skill: 50
+  # - item: "Apple"
+  #   min_skill: 60
+  # - item: "Potato"
+  #   min_skill: 70
+  # - item: "Mushroom"
+  #   min_skill: 80
+  # - item: "Egg"
+  #   min_skill: 90
+  # - item: "Honey"
+  #   min_skill: 100
+

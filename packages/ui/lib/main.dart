@@ -326,7 +326,12 @@ class _MyHomePageState extends State<MyHomePage> {
         await rootBundle.loadString('packages/logic/assets/recipes.yaml');
     final items = ItemSet.fromYaml(loadYaml(itemsText) as YamlMap);
     final recipes = RecipeSet.fromYaml(loadYaml(recipesText) as YamlMap, items);
-    final rules = DOC(items: items, recipes: recipes);
+    final tasks = TaskSet.fromYaml(
+      loadYaml(await rootBundle.loadString('packages/logic/assets/tasks.yaml'))
+          as YamlMap,
+      items,
+    );
+    final rules = DOC(items: items, recipes: recipes, tasks: tasks);
     setState(() {
       _rules = rules;
     });

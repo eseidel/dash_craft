@@ -7,6 +7,14 @@ class Item {
     this.energy,
   });
 
+  factory Item.fromYaml(YamlMap yaml) {
+    return Item(
+      name: yaml['name'] as String,
+      energy: yaml['energy'] as int?,
+      gatherSkill: yaml['gatherSkill'] as int?,
+    );
+  }
+
   final String name;
   final int? energy;
   final int? gatherSkill;
@@ -21,12 +29,7 @@ class ItemSet {
   factory ItemSet.fromYaml(YamlMap yaml) {
     final byName = <String, Item>{};
     for (final itemYaml in yaml['items'] as YamlList) {
-      final itemMap = itemYaml as YamlMap;
-      final item = Item(
-        name: itemMap['name'] as String,
-        energy: itemMap['energy'] as int?,
-        gatherSkill: itemMap['gatherSkill'] as int?,
-      );
+      final item = Item.fromYaml(itemYaml as YamlMap);
       byName[item.name] = item;
     }
     return ItemSet._(byName);

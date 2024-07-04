@@ -4,16 +4,23 @@ import 'dart:io';
 
 import 'package:logic/items.dart';
 import 'package:logic/recipes.dart';
+import 'package:logic/tasks.dart';
 import 'package:yaml/yaml.dart';
 
 export 'package:logic/items.dart';
 export 'package:logic/recipes.dart';
+export 'package:logic/tasks.dart';
 
 class Rules {
-  const Rules({required this.items, required this.recipes});
+  const Rules({
+    required this.items,
+    required this.recipes,
+    required this.tasks,
+  });
 
   final ItemSet items;
   final RecipeSet recipes;
+  final TaskSet tasks;
 
   // TODO(eseidel): This function can't cover all items as designed.
   // It does not cover minion actions (which are a source of items).
@@ -28,9 +35,8 @@ class Rules {
 }
 
 class DOC extends Rules {
-  DOC({required super.items, required super.recipes})
-      : stone = items['Stone'],
-        banana = items['Banana'],
+  DOC({required super.items, required super.recipes, required super.tasks})
+      : banana = items['Banana'],
         peeledBanana = items['Peeled Banana'],
         goop = items['Goop'];
 
@@ -39,7 +45,9 @@ class DOC extends Rules {
     recipesUri ??= Uri.parse('assets/recipes.yaml');
     final items = ItemSet.fromYaml(_loadYaml(itemsUri));
     final recipes = RecipeSet.fromYaml(_loadYaml(recipesUri), items);
-    return DOC(items: items, recipes: recipes);
+    final tasks =
+        TaskSet.fromYaml(_loadYaml(Uri.parse('assets/tasks.yaml')), items);
+    return DOC(items: items, recipes: recipes, tasks: tasks);
   }
 
   static YamlMap _loadYaml(Uri uri) {
@@ -49,11 +57,5 @@ class DOC extends Rules {
 
   final Item banana;
   final Item peeledBanana;
-  final Item stone;
   final Item goop;
-
-  List<Item> get gatherItems => [
-        banana,
-        stone,
-      ];
 }

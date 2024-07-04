@@ -34,10 +34,11 @@ void main(List<String> args) {
 
   final doc = DOC.load();
   final actionGenerator = ActionGenerator(doc);
+  final stone = doc.items['Stone'];
 
   print('Simulating...');
   final game = Game(seed: seed);
-  final goal = Goal({doc.stone: 100});
+  final goal = Goal({stone: 100});
   final planner = MonteCarloTreeSearchPlanner(
     goal,
     seed: seed,

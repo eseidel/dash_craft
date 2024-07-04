@@ -195,14 +195,6 @@ class Craft extends Action {
   String toString() => 'Craft($recipe)';
 }
 
-enum MinionTask {
-  gather,
-  lumberjack,
-  hunt,
-  fish,
-  treasureHunt,
-}
-
 class SendMinion extends Action {
   const SendMinion({required this.doc});
   final DOC doc;
@@ -225,9 +217,9 @@ class SendMinion extends Action {
     return 1.0 / availableItems.length;
   }
 
-  MinionTask get task {
+  TaskType get task {
     // compute from context.
-    return MinionTask.gather;
+    return TaskType.gather;
   }
 
   @override
@@ -238,9 +230,7 @@ class SendMinion extends Action {
   }
 
   Iterable<Item> availableGatherItems(Skills skills) {
-    return doc.gatherItems.where((i) {
-      return i.gatherSkill != null && i.gatherSkill! <= skills[Skill.gather];
-    });
+    return doc.tasks.withType(TaskType.gather).map((t) => t.item);
   }
 
   int gatherTimeMs(ResolveContext context) {
@@ -272,12 +262,12 @@ class SendMinion extends Action {
   @override
   ActionResult resolve(ResolveContext context) {
     switch (task) {
-      case MinionTask.gather:
+      case TaskType.gather:
         return gatherResult(context);
-      case MinionTask.lumberjack:
-      case MinionTask.hunt:
-      case MinionTask.fish:
-      case MinionTask.treasureHunt:
+      case TaskType.lumberjack:
+      case TaskType.hunt:
+      case TaskType.fish:
+      case TaskType.treasureHunt:
         throw UnimplementedError();
     }
   }
