@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logic/doc.dart';
+import 'package:logic/game.dart';
 import 'package:yaml/yaml.dart';
 
 const inputSize = 3;
@@ -324,6 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final inventory = <Item>[];
   late final DOC? _rules;
   String? errorMessage;
+  Game game = Game();
 
   bool isLoaded() => _rules != null;
   Rules get rules => _rules!;
@@ -416,7 +418,11 @@ class _MyHomePageState extends State<MyHomePage> {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return const SkillSheet(title: 'My Skills');
+        return SkillSheet(
+          title: 'My Skills',
+          skillList: Skill.mySkills,
+          skills: game.state.skills,
+        );
       },
     );
   }
@@ -425,7 +431,11 @@ class _MyHomePageState extends State<MyHomePage> {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return const SkillSheet(title: 'Minion Skills');
+        return SkillSheet(
+          title: 'Minion Skills',
+          skillList: Skill.minionSkills,
+          skills: game.state.skills,
+        );
       },
     );
   }
@@ -450,27 +460,37 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class SkillSheet extends StatelessWidget {
-  const SkillSheet({required this.title, super.key});
+  const SkillSheet({
+    required this.title,
+    required this.skills,
+    required this.skillList,
+    super.key,
+  });
 
   final String title;
+  final Skills skills;
+  final List<Skill> skillList;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      color: Colors.amber,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(title),
-            ElevatedButton(
-              child: const Text('Close BottomSheet'),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Row(
+            children: [
+              Text(title),
+              ElevatedButton(
+                child: const Text('X'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          ...skillList.map((skill) {
+            return Text('${skill.name}: ${skills[skill]}');
+          }),
+        ],
       ),
     );
   }

@@ -75,13 +75,13 @@ class ResolveContext {
     if (task.type != TaskType.gather) {
       throw ArgumentError('Only gather tasks can change gather skill');
     }
-    final skillDiff = skills[Skill.gather] - task.minSkill;
+    final skillDiff = skills[Skill.gathering] - task.minSkill;
     if (skillDiff >= 40) {
       return null;
     }
     // This gets us something between 0.1 and 0.5, bigger when less skilled.
     final change = min(1.0 - (skillDiff / 40) * 0.5, 0.1);
-    return Skills({Skill.gather: change});
+    return Skills({Skill.gathering: change});
   }
 
   Skills? craftingSkillChange(Recipe recipe) {
@@ -237,7 +237,7 @@ class SendMinion extends Action {
   Iterable<MinionTask> availableGatherTasks(Skills skills) {
     return doc.tasks
         .withType(TaskType.gather)
-        .where((t) => t.minSkill <= skills[Skill.gather]);
+        .where((t) => t.minSkill <= skills[Skill.gathering]);
   }
 
   Iterable<Item> availableGatherItems(Skills skills) {

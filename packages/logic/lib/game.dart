@@ -7,9 +7,33 @@ import 'package:logic/logger.dart';
 import 'package:meta/meta.dart';
 
 enum Skill {
-  foodPrep,
-  toolCrafting,
-  gather;
+  // My Skills
+  mealPreparing('Meal Preparing'),
+  toolCrafting('Tool Crafting'),
+  woodWorking('Wood Working'),
+  skinning('Skinning'),
+  cooking('Cooking'),
+  tailoring('Tailoring'),
+  pottery('Pottery'),
+  construction('Construction'),
+  painting('Painting'),
+  // Minion Skills
+  gathering('Gathering'),
+  lumberjack('Lumberjack'),
+  hunting('Hunting'),
+  fishing('Fishing'),
+  treasureHunting('Treasure Hunting'),
+  communication('Communication');
+
+  const Skill(this.name);
+
+  final String name;
+
+  static List<Skill> get mySkills =>
+      Skill.values.where((s) => s.index < Skill.gathering.index).toList();
+
+  static List<Skill> get minionSkills =>
+      Skill.values.where((s) => s.index >= Skill.gathering.index).toList();
 
   static Skill fromString(String name) {
     final skill = Skill.values.firstWhereOrNull((e) => e.name == name);

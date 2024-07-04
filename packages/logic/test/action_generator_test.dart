@@ -8,7 +8,7 @@ void main() {
     final doc = DOC.load();
     final actionGenerator = ActionGenerator(doc);
     final inventory = Inventory.fromItems([doc.banana]);
-    const skills = Skills({Skill.foodPrep: 0});
+    const skills = Skills({Skill.mealPreparing: 0});
     final actions = actionGenerator.possibleCrafts(inventory, skills);
     expect(actions.length, 1);
     expect(actions.first.recipe.outputs[doc.peeledBanana], 1);
