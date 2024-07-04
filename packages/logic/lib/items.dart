@@ -46,8 +46,6 @@ class ItemSet {
   }
 }
 
-
-
 // enum ItemKind {
 //   other,
 //   food,

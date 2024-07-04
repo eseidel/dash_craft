@@ -35,27 +35,23 @@ class Rules {
 }
 
 class DOC extends Rules {
-  DOC({required super.items, required super.recipes, required super.tasks})
-      : banana = items['Banana'],
-        peeledBanana = items['Peeled Banana'],
-        goop = items['Goop'];
+  DOC({required super.items, required super.recipes, required super.tasks});
 
-  factory DOC.load({Uri? itemsUri, Uri? recipesUri}) {
-    itemsUri ??= Uri.parse('assets/items.yaml');
-    recipesUri ??= Uri.parse('assets/recipes.yaml');
-    final items = ItemSet.fromYaml(_loadYaml(itemsUri));
-    final recipes = RecipeSet.fromYaml(_loadYaml(recipesUri), items);
-    final tasks =
-        TaskSet.fromYaml(_loadYaml(Uri.parse('assets/tasks.yaml')), items);
+  factory DOC.load() {
+    final items = ItemSet.fromYaml(_loadYaml('assets/items.yaml'));
+    final recipes = RecipeSet.fromYaml(_loadYaml('assets/recipes.yaml'), items);
+    final tasks = TaskSet.fromYaml(_loadYaml('assets/tasks.yaml'), items);
     return DOC(items: items, recipes: recipes, tasks: tasks);
   }
 
-  static YamlMap _loadYaml(Uri uri) {
-    final contents = File.fromUri(uri).readAsStringSync();
+  static YamlMap _loadYaml(String path) {
+    final contents = File(path).readAsStringSync();
     return loadYaml(contents) as YamlMap;
   }
 
-  final Item banana;
-  final Item peeledBanana;
-  final Item goop;
+  // These are mostly helpers for tests.
+  Item get banana => items['Banana'];
+  Item get peeledBanana => items['Peeled Banana'];
+  Recipe get peeledBananaRecipe => recipes[peeledBanana.name];
+  Item get goop => items['Goop'];
 }

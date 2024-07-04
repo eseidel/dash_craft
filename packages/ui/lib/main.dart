@@ -342,7 +342,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return null;
     }
     if (items[0] == doc.banana) {
-      return doc.recipes['Peeled Banana'];
+      return doc.peeledBananaRecipe;
     }
     return null;
   }
