@@ -1,10 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'package:args/args.dart';
+import 'package:dash_craft/doc.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/items.dart';
 import 'package:dash_craft/plan/goal.dart';
 import 'package:dash_craft/plan/mcts.dart';
+import 'package:dash_craft/plan/planner.dart';
 
 // MVP
 // A thing which can simulate to peel 100 bananas
@@ -31,10 +32,17 @@ void main(List<String> args) {
   final results = parser.parse(args);
   final seed = int.tryParse(results['seed'] as String? ?? '');
 
+  final doc = DOC.load();
+  final actionGenerator = ActionGenerator(doc);
+
   print('Simulating...');
   final game = Game(seed: seed);
-  final goal = Goal({stone: 100});
-  final planner = MonteCarloTreeSearchPlanner(goal, seed: seed);
+  final goal = Goal({doc.stone: 100});
+  final planner = MonteCarloTreeSearchPlanner(
+    goal,
+    seed: seed,
+    actionGenerator: actionGenerator,
+  );
 
   var moveNumber = 0;
 

@@ -6,6 +6,8 @@ import 'package:test/test.dart';
 void main() {
   test('percentComplete', () {
     const empty = GameState.empty();
+    const stone = Item(name: 'Stone', energy: 0, gatherSkill: 0);
+    const banana = Item(name: 'Banana', energy: 0, gatherSkill: 0);
     final goal = Goal({stone: 100});
     expect(goal.percentComplete(empty), 0);
 

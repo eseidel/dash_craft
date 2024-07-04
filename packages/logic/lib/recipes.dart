@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:collection/collection.dart';
+import 'package:dash_craft/doc.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/items.dart';
 import 'package:meta/meta.dart';
+import 'package:yaml/yaml.dart';
 
 // Can Recipes unify with gather/hunt actions?
 // Would need to have a "which human can do this"
@@ -18,7 +22,15 @@ import 'package:meta/meta.dart';
 enum MeTool {
   hand,
   stone,
-  sharpStone,
+  sharpStone;
+
+  static MeTool fromString(String name) {
+    final tool = MeTool.values.firstWhereOrNull((e) => e.name == name);
+    if (tool == null) {
+      throw ArgumentError('Unknown tool: $name');
+    }
+    return tool;
+  }
 }
 
 class ItemCount {
@@ -41,29 +53,32 @@ List<Item> flatten(Map<Item, int> counts) {
 @immutable
 class Recipe {
   const Recipe({
+    required this.name,
     required this.inputs,
     required this.outputs,
     required this.tool,
     required this.skill,
     required this.skillRequired,
-    this.failureGivesGoop = false,
+    required this.failureOutputs,
   });
 
-  const Recipe.food({
-    required this.outputs,
-    required this.inputs,
-    required this.tool,
-    required this.skillRequired,
-    this.failureGivesGoop = true,
-  }) : skill = Skill.foodPrep;
+  // const Recipe.food({
+  //   required this.outputs,
+  //   required this.inputs,
+  //   required this.tool,
+  //   required this.skillRequired,
+  //   this.failureGivesGoop = true,
+  // }) : skill = Skill.foodPrep;
 
-  const Recipe.tool({
-    required this.outputs,
-    required this.inputs,
-    required this.tool,
-    required this.skillRequired,
-  })  : skill = Skill.toolCrafting,
-        failureGivesGoop = false;
+  // const Recipe.tool({
+  //   required this.outputs,
+  //   required this.inputs,
+  //   required this.tool,
+  //   required this.skillRequired,
+  // })  : skill = Skill.toolCrafting,
+  //       failureGivesGoop = false;
+
+  final String name;
   final Map<Item, int> inputs;
   final MeTool tool;
   // Skill required
@@ -71,7 +86,7 @@ class Recipe {
   final int skillRequired;
   // Percentage chance for a given output (e.g. eggs)
   final Map<Item, int> outputs;
-  final bool failureGivesGoop;
+  final List<Item> failureOutputs;
 
   Iterable<ItemCount> get inputCounts =>
       inputs.entries.map((e) => ItemCount(e.key, e.value));
@@ -87,131 +102,159 @@ class Recipe {
 
   @override
   String toString() {
-    return 'Recipe($outputs)';
+    return 'Recipe($name)';
   }
 }
 
-List<Recipe> recipes = const [
-  Recipe.food(
-    outputs: {peeledBanana: 1},
-    inputs: {banana: 1},
-    skillRequired: 0,
-    tool: MeTool.hand,
-  ),
-  Recipe.food(
-    outputs: {peeledOrange: 1},
-    inputs: {orange: 1},
-    skillRequired: 0,
-    tool: MeTool.hand,
-  ),
-  Recipe.food(
-    outputs: {walnutKernel: 1},
-    inputs: {walnut: 1},
-    tool: MeTool.stone,
-    skillRequired: 0,
-  ),
-  Recipe.food(
-    outputs: {slicedBanana: 1},
-    inputs: {peeledBanana: 1},
-    tool: MeTool.sharpStone,
-    skillRequired: 0,
-  ),
-  Recipe.food(
-    outputs: {peanutKernel: 1},
-    inputs: {peanut: 1},
-    tool: MeTool.hand,
-    skillRequired: 5,
-  ),
-  Recipe.food(
-    outputs: {openedCoconut: 2},
-    inputs: {coconut: 1},
-    tool: MeTool.stone,
-    skillRequired: 10,
-  ),
-  Recipe.food(
-    outputs: {rawCoconut: 1},
-    inputs: {openedCoconut: 1},
-    tool: MeTool.sharpStone,
-    skillRequired: 15,
-  ),
-  Recipe.food(
-    outputs: {mixedBerries: 1},
-    inputs: {redberry: 1, blueberry: 1},
-    tool: MeTool.hand,
-    skillRequired: 15,
-  ),
-  Recipe.food(
-    outputs: {chestnutKernel: 1},
-    inputs: {chestnut: 1},
-    tool: MeTool.stone,
-    skillRequired: 15,
-  ),
-  Recipe.food(
-    outputs: {blueBerryMash: 1},
-    inputs: {blueberry: 2, coconutShell: 1},
-    tool: MeTool.stone,
-    skillRequired: 15,
-  ),
-  Recipe.food(
-    outputs: {redBerryMash: 1},
-    inputs: {redberry: 2, coconutShell: 1},
-    tool: MeTool.stone,
-    skillRequired: 15,
-  ),
-  Recipe.food(
-    outputs: {mixedBerryMash: 1},
-    inputs: {mixedBerries: 2, coconutShell: 1},
-    tool: MeTool.stone,
-    skillRequired: 20,
-  ),
-  Recipe.food(
-    outputs: {bananaMash: 1},
-    inputs: {banana: 2, coconutShell: 1},
-    tool: MeTool.stone,
-    skillRequired: 25,
-  ),
-  Recipe.food(
-    outputs: {slicedOrange: 1},
-    inputs: {orange: 1},
-    tool: MeTool.sharpStone,
-    skillRequired: 25,
-  ),
-  Recipe.food(
-    outputs: {slicedTomato: 1},
-    inputs: {tomato: 1},
-    tool: MeTool.sharpStone,
-    skillRequired: 30,
-  ),
-  Recipe.food(
-    outputs: {slicedCarrot: 1},
-    inputs: {carrot: 1},
-    tool: MeTool.sharpStone,
-    skillRequired: 30,
-  ),
-  Recipe.food(
-    outputs: {cutLettuce: 1},
-    inputs: {lettuce: 1},
-    tool: MeTool.sharpStone,
-    skillRequired: 30,
-  ),
-  Recipe.tool(
-    outputs: {sharpStone: 1},
-    inputs: {stone: 1},
-    tool: MeTool.stone,
-    skillRequired: 0,
-  ),
-];
+class RecipeSet {
+  RecipeSet._(this._byName);
 
-// TODO(eseidel): This function can't cover all items as designed.
-// It does not cover minion actions (which are a source of items).
-// e.g. gathering, hunting, exporing, etc.
-Iterable<Recipe> recipesWithOutput(Item output) sync* {
-  for (final recipe in recipes) {
-    if (recipe.outputs.keys.contains(output)) {
-      yield recipe;
+  factory RecipeSet.fromYaml(String filename, ItemSet items) {
+    final contents = File(filename).readAsStringSync();
+    final yaml = loadYaml(contents) as YamlMap;
+    final byName = <String, Recipe>{};
+    for (final recipeYaml in yaml['recipes'] as YamlList) {
+      final recipeMap = recipeYaml as YamlMap;
+      final inputs = (recipeMap['in'] as Map)
+          .map((key, value) => MapEntry(items[key as String], value as int));
+      final outputs = (recipeMap['out'] as Map)
+          .map((key, value) => MapEntry(items[key as String], value as int));
+      final recipe = Recipe(
+        name: recipeMap['name'] as String? ?? outputs.keys.first.name,
+        inputs: inputs,
+        outputs: outputs,
+        tool: MeTool.fromString(recipeMap['tool'] as String),
+        skill: Skill.fromString(recipeMap['skill'] as String),
+        skillRequired: recipeMap['min_skill'] as int? ?? 0,
+        failureOutputs: ((recipeMap['fail'] as List?) ?? [])
+            .cast<String>()
+            .map((name) => items[name])
+            .toList(),
+      );
+      byName[recipe.name] = recipe;
     }
+    return RecipeSet._(byName);
+  }
+
+  final Map<String, Recipe> _byName;
+
+  Iterable<Recipe> get all => _byName.values;
+
+  Recipe operator [](String name) {
+    return _byName[name]!;
   }
 }
+
+// List<Recipe> recipes = const [
+//   Recipe.food(
+//     outputs: {peeledBanana: 1},
+//     inputs: {banana: 1},
+//     skillRequired: 0,
+//     tool: MeTool.hand,
+//   ),
+//   Recipe.food(
+//     outputs: {peeledOrange: 1},
+//     inputs: {orange: 1},
+//     skillRequired: 0,
+//     tool: MeTool.hand,
+//   ),
+//   Recipe.food(
+//     outputs: {walnutKernel: 1},
+//     inputs: {walnut: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 0,
+//   ),
+//   Recipe.food(
+//     outputs: {slicedBanana: 1},
+//     inputs: {peeledBanana: 1},
+//     tool: MeTool.sharpStone,
+//     skillRequired: 0,
+//   ),
+//   Recipe.food(
+//     outputs: {peanutKernel: 1},
+//     inputs: {peanut: 1},
+//     tool: MeTool.hand,
+//     skillRequired: 5,
+//   ),
+//   Recipe.food(
+//     outputs: {openedCoconut: 2},
+//     inputs: {coconut: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 10,
+//   ),
+//   Recipe.food(
+//     outputs: {rawCoconut: 1},
+//     inputs: {openedCoconut: 1},
+//     tool: MeTool.sharpStone,
+//     skillRequired: 15,
+//   ),
+//   Recipe.food(
+//     outputs: {mixedBerries: 1},
+//     inputs: {redberry: 1, blueberry: 1},
+//     tool: MeTool.hand,
+//     skillRequired: 15,
+//   ),
+//   Recipe.food(
+//     outputs: {chestnutKernel: 1},
+//     inputs: {chestnut: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 15,
+//   ),
+//   Recipe.food(
+//     outputs: {blueBerryMash: 1},
+//     inputs: {blueberry: 2, coconutShell: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 15,
+//   ),
+//   Recipe.food(
+//     outputs: {redBerryMash: 1},
+//     inputs: {redberry: 2, coconutShell: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 15,
+//   ),
+//   Recipe.food(
+//     outputs: {mixedBerryMash: 1},
+//     inputs: {mixedBerries: 2, coconutShell: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 20,
+//   ),
+//   Recipe.food(
+//     outputs: {bananaMash: 1},
+//     inputs: {banana: 2, coconutShell: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 25,
+//   ),
+//   Recipe.food(
+//     outputs: {slicedOrange: 1},
+//     inputs: {orange: 1},
+//     tool: MeTool.sharpStone,
+//     skillRequired: 25,
+//   ),
+//   Recipe.food(
+//     outputs: {slicedTomato: 1},
+//     inputs: {tomato: 1},
+//     tool: MeTool.sharpStone,
+//     skillRequired: 30,
+//   ),
+//   Recipe.food(
+//     outputs: {slicedCarrot: 1},
+//     inputs: {carrot: 1},
+//     tool: MeTool.sharpStone,
+//     skillRequired: 30,
+//   ),
+//   Recipe.food(
+//     outputs: {cutLettuce: 1},
+//     inputs: {lettuce: 1},
+//     tool: MeTool.sharpStone,
+//     skillRequired: 30,
+//   ),
+//   Recipe.tool(
+//     outputs: {sharpStone: 1},
+//     inputs: {stone: 1},
+//     tool: MeTool.stone,
+//     skillRequired: 0,
+//   ),
+// ];
 
 // Peeled Banana	Banana			Hand	0	1	3
 // Peeled Orange	Orange			Hand	0	1	3

@@ -1,10 +1,9 @@
 import 'dart:math';
 
 import 'package:dash_craft/action.dart';
+import 'package:dash_craft/doc.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/items.dart';
 import 'package:dash_craft/plan/planner.dart';
-import 'package:dash_craft/recipes.dart';
 
 class Goal {
   Goal(this.itemToCount);
@@ -54,19 +53,20 @@ Action pickAction(List<Action> actions) {
   return actions.first;
 }
 
-Iterable<Action> actionsWithOutput(Item output) sync* {
-  final recipes = recipesWithOutput(output);
+Iterable<Action> actionsWithOutput(DOC doc, Item output) sync* {
+  final recipes = doc.recipesWithOutput(output);
   for (final recipe in recipes) {
     yield Craft(recipe: recipe);
   }
   if (output.gatherSkill != null) {
     // TODO(eseidel): Should have a specific output?
-    yield SendMinion();
+    yield SendMinion(doc: doc);
   }
 }
 
 class ActionNodeCache {
-  ActionNodeCache(this.state);
+  ActionNodeCache(this.doc, this.state);
+  final DOC doc;
   final GameState state;
   final Map<ItemCount, ActionNode> _cache = {};
 
@@ -107,7 +107,7 @@ class ActionNodeCache {
     // e.g. Peeled banana
     // Figure out what actions produce such, pick the best one.
     // Do we need to pick one or just keep them all?
-    final actions = actionsWithOutput(count.item);
+    final actions = actionsWithOutput(doc, count.item);
     assert(actions.isNotEmpty, 'No actions for $count');
     final action = pickAction(actions.toList());
 
@@ -131,18 +131,20 @@ class ActionNodeCache {
 }
 
 class ActionTree extends Node {
-  ActionTree.build(this.state, this.goal)
-      : _cache = ActionNodeCache(state),
+  ActionTree.build(this.doc, this.state, this.goal)
+      : _cache = ActionNodeCache(doc, state),
         super.root() {
     children = goal.itemCounts.map(_cache.actionSubtreeForItemCount).toList();
   }
+  final DOC doc;
   final Goal goal;
   final GameState state;
   final ActionNodeCache _cache;
 }
 
 class GoalPlanner extends Planner {
-  GoalPlanner(this.goal);
+  GoalPlanner(this.rules, this.goal);
+  final DOC rules;
   final Goal goal;
 
   Action? nextAction(ActionNode root, Map<Item, int> itemCounts) {
@@ -179,7 +181,7 @@ class GoalPlanner extends Planner {
     // If we don't have food, gather (and skin).
 
     // Figure out what actions are needed to get to the goal.
-    final tree = ActionTree.build(state, goal);
+    final tree = ActionTree.build(rules, state, goal);
     // How much energy will this action tree cost?
     // Plan to fetch that much food?
 

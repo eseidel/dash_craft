@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:dash_craft/action.dart';
 import 'package:dash_craft/items.dart';
 import 'package:dash_craft/logger.dart';
@@ -8,7 +9,15 @@ import 'package:meta/meta.dart';
 enum Skill {
   foodPrep,
   toolCrafting,
-  gather,
+  gather;
+
+  static Skill fromString(String name) {
+    final skill = Skill.values.firstWhereOrNull((e) => e.name == name);
+    if (skill == null) {
+      throw ArgumentError('Unknown skill: $name');
+    }
+    return skill;
+  }
 }
 
 @immutable

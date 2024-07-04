@@ -182,6 +182,7 @@ class ActionNode extends Node<ActionNode> {
     required this.goal,
     required this.depth,
     required this.random,
+    required this.actionGenerator,
   })
   // Faster to compute the hashcode up front and cache it.
   // This is possible since everything is immutable.
@@ -193,6 +194,7 @@ class ActionNode extends Node<ActionNode> {
   final Goal goal;
   final GameState state;
   final Random random;
+  final ActionGenerator actionGenerator;
   List<ActionNode>? _childrenCache;
   @override
   final int depth;
@@ -204,7 +206,7 @@ class ActionNode extends Node<ActionNode> {
 
   @override
   Iterable<ActionNode> collectChildren() {
-    _childrenCache ??= ActionGenerator.possibleActions(state).map((action) {
+    _childrenCache ??= actionGenerator.possibleActions(state).map((action) {
       final context = ResolveContext(state, random);
       final result = action.resolve(context);
       return ActionNode(
@@ -213,6 +215,7 @@ class ActionNode extends Node<ActionNode> {
         goal: goal,
         depth: depth + 1,
         random: random,
+        actionGenerator: actionGenerator,
       );
     }).toList();
     return _childrenCache!;
@@ -249,16 +252,19 @@ class ActionNode extends Node<ActionNode> {
 class MonteCarloTreeSearchPlanner extends Planner {
   MonteCarloTreeSearchPlanner(
     this.goal, {
+    required ActionGenerator actionGenerator,
     double explorationWeight = 1.4,
     int? seed,
   })  : _mtcs =
             MTCS<ActionNode>(explorationWeight: explorationWeight, seed: seed),
-        _random = Random(seed);
+        _random = Random(seed),
+        _actionGenerator = actionGenerator;
   final int _simulationsPerTurn = 50;
   ActionNode? _root;
   final MTCS<ActionNode> _mtcs;
   final Goal goal;
   final Random _random;
+  final ActionGenerator _actionGenerator;
 
   @override
   Action plan(GameState state) {
@@ -268,6 +274,7 @@ class MonteCarloTreeSearchPlanner extends Planner {
       goal: goal,
       depth: 0,
       random: _random,
+      actionGenerator: _actionGenerator,
     );
     // Update root every time with the current state.
     // Otherwise we'll plan impossible actions?
@@ -277,6 +284,7 @@ class MonteCarloTreeSearchPlanner extends Planner {
       goal: goal,
       depth: _root!.depth,
       random: _random,
+      actionGenerator: _actionGenerator,
     );
 
     for (var i = 0; i < _simulationsPerTurn; i++) {

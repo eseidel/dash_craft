@@ -1,0 +1,7 @@
+recipes:
+- in:
+    "Banana": 1
+  out:
+    "Peeled Banana": 1
+  tool: "hand"
+  skill: "foodPrep"

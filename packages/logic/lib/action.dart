@@ -1,8 +1,7 @@
 import 'dart:math';
 
+import 'package:dash_craft/doc.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/items.dart';
-import 'package:dash_craft/recipes.dart';
 import 'package:meta/meta.dart';
 
 // Actions types
@@ -184,7 +183,7 @@ class Craft extends Action {
         action: this,
         timeInMilliseconds: craftTimeMs(context.skills),
         removeItems: recipe.inputAsList,
-        addItems: recipe.failureGivesGoop ? [goop] : [],
+        addItems: recipe.failureOutputs,
         skillChange: context.craftingSkillChange(recipe),
       );
     }
@@ -205,6 +204,8 @@ enum MinionTask {
 }
 
 class SendMinion extends Action {
+  const SendMinion({required this.doc});
+  final DOC doc;
   // with tool?
 
   // communication
@@ -237,7 +238,7 @@ class SendMinion extends Action {
   }
 
   Iterable<Item> availableGatherItems(Skills skills) {
-    return gatherItems.where((i) {
+    return doc.gatherItems.where((i) {
       return i.gatherSkill != null && i.gatherSkill! <= skills[Skill.gather];
     });
   }

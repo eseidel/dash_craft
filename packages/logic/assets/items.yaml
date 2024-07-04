@@ -1,9 +1,8 @@
-item_types:
-  - Banana
-  - Stone
-  - Orange
-  - Peeled Banana
-  - Cooked Banana
-  - Goop
-  - Stick
-  - 
+items:
+- name: 'Banana'
+  energy: 10
+- name: 'Peeled Banana'
+  energy: 5
+- name: 'Stone'
+- name: 'Goop'
+  energy: -1

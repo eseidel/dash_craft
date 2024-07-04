@@ -1,16 +1,20 @@
 import 'dart:math';
 
 import 'package:dash_craft/action.dart';
+import 'package:dash_craft/doc.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/recipes.dart';
 
 class ActionGenerator {
-  static Iterable<Craft> possibleCrafts(
+  ActionGenerator(this.doc);
+
+  final DOC doc;
+
+  Iterable<Craft> possibleCrafts(
     Inventory inventory,
     Skills skills,
   ) sync* {
     final counts = inventory.itemToCount;
-    for (final recipe in recipes) {
+    for (final recipe in doc.recipes.all) {
       if (recipe.skillRequired <= skills[recipe.skill] &&
           recipe.inputs.entries.every(
             (e) => counts[e.key] != null && counts[e.key]! >= e.value,
@@ -20,25 +24,27 @@ class ActionGenerator {
     }
   }
 
-  static List<SendMinion> possibleSendMinions(Inventory inventory) {
+  List<SendMinion> possibleSendMinions(Inventory inventory) {
     // TODO(eseidel): Other send types depending on available items.
-    return [SendMinion()];
+    return [SendMinion(doc: doc)];
   }
 
-  static Iterable<Feed> possibleFeeds(GameState state) sync* {
+  Iterable<Feed> possibleFeeds(GameState state) sync* {
     for (final item in state.inventory.uniqueItems) {
-      if (item.energy != null) {
-        if (item.energy! <= state.meHunger) {
-          yield Feed(inputs: [item], target: TargetHuman.me);
-        }
-        if (item.energy! <= state.minionHunger) {
-          yield Feed(inputs: [item], target: TargetHuman.minion);
-        }
+      final energy = item.energy;
+      if (energy == null) {
+        continue;
+      }
+      if (energy <= state.meHunger) {
+        yield Feed(inputs: [item], target: TargetHuman.me);
+      }
+      if (energy <= state.minionHunger) {
+        yield Feed(inputs: [item], target: TargetHuman.minion);
       }
     }
   }
 
-  static Iterable<Action> possibleActions(GameState state) sync* {
+  Iterable<Action> possibleActions(GameState state) sync* {
     // all possible recipes
     for (final craft in possibleCrafts(state.inventory, state.skills)) {
       yield craft;
@@ -63,12 +69,14 @@ abstract class Planner {
 }
 
 class RandomPlanner extends Planner {
-  RandomPlanner({int? seed}) : random = Random(seed);
+  RandomPlanner({required this.actionGenerator, int? seed})
+      : random = Random(seed);
   final Random random;
+  final ActionGenerator actionGenerator;
 
   @override
   Action plan(GameState state) {
-    final actions = ActionGenerator.possibleActions(state).toList();
+    final actions = actionGenerator.possibleActions(state).toList();
     return actions[random.nextInt(actions.length)];
   }
 }

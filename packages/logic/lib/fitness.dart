@@ -1,8 +1,7 @@
 import 'dart:math';
 
+import 'package:dash_craft/doc.dart';
 import 'package:dash_craft/game.dart';
-import 'package:dash_craft/items.dart';
-import 'package:dash_craft/recipes.dart';
 
 // Possible fitness values:
 
@@ -34,22 +33,22 @@ double totalSkillValue(GameState state) {
 // ** Total inventory crafting level value?
 
 // Should be memoized?
-int minimumSkillNeededFor(Item item) {
+int minimumSkillNeededFor(Rules rules, Item item) {
   if (item.gatherSkill != null) {
     return item.gatherSkill!;
   }
-  final recipes = recipesWithOutput(item);
+  final recipes = rules.recipesWithOutput(item);
   // pick the recipe which produces this output with the lowest skill level?
   final skillLevels = recipes.map((r) => r.skillRequired).toList();
   return skillLevels.reduce(min);
 }
 
 // Minimum crafting levels of all inventory items added together.
-int totalInventoryCraftingLevels(GameState state) {
+int totalInventoryCraftingLevels(Rules rules, GameState state) {
   var total = 0;
   for (final item in state.inventory.uniqueItems) {
     final count = state.inventory.countOf(item);
-    total += minimumSkillNeededFor(item) * count;
+    total += minimumSkillNeededFor(rules, item) * count;
   }
   return total;
 }
