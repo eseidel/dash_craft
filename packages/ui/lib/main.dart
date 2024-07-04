@@ -61,11 +61,21 @@ class ItemWidget extends StatelessWidget {
     if (item == null) {
       return const SizedBox();
     }
-    return Container(
+    final assetName = item!.name.replaceAll(' ', '');
+    final assetKey = 'assets/doc/${assetName}_Normal.png';
+    print(assetKey);
+    return Image.asset(
+      assetKey,
       width: 100,
       height: 100,
-      color: Colors.deepPurple,
-      child: Text(item.toString()),
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 100,
+          height: 100,
+          color: Colors.deepPurple,
+          child: Text(item.toString()),
+        );
+      },
     );
   }
 }
