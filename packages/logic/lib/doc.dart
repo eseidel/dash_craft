@@ -39,15 +39,15 @@ class DOC extends Rules {
   DOC({required super.items, required super.recipes, required super.tasks});
 
   factory DOC.load() {
-    final items = ItemSet.fromYaml(_loadYaml('assets/items.yaml'));
-    final recipes = RecipeSet.fromYaml(_loadYaml('assets/recipes.yaml'), items);
-    final tasks = TaskSet.fromYaml(_loadYaml('assets/tasks.yaml'), items);
-    return DOC(items: items, recipes: recipes, tasks: tasks);
-  }
+    YamlMap loadYamlMap(String key) {
+      final text = File('assets/$key.yaml').readAsStringSync();
+      return loadYaml(text) as YamlMap;
+    }
 
-  static YamlMap _loadYaml(String path) {
-    final contents = File(path).readAsStringSync();
-    return loadYaml(contents) as YamlMap;
+    final items = ItemSet.fromYaml(loadYamlMap('items'));
+    final recipes = RecipeSet.fromYaml(loadYamlMap('recipes'), items);
+    final tasks = TaskSet.fromYaml(loadYamlMap('tasks'), items);
+    return DOC(items: items, recipes: recipes, tasks: tasks);
   }
 
   // These are mostly helpers for tests.
