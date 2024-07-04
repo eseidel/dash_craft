@@ -51,29 +51,109 @@ class TappableItem extends StatelessWidget {
   }
 }
 
+extension on Item {
+  String get assetKey {
+    final assetName = name.replaceAll(' ', '');
+    return 'assets/doc/${assetName}_Normal.png';
+  }
+}
+
+extension on MeTool {
+  String get assetKey {
+    final assetName = name.replaceAll(' ', '');
+    return 'assets/doc/${assetName}_Normal.png';
+  }
+}
+
 class ItemWidget extends StatelessWidget {
-  const ItemWidget({required this.item, super.key});
+  const ItemWidget({
+    required this.item,
+    super.key,
+    this.width = 100,
+    this.height = 100,
+  });
 
   final Item? item;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     if (item == null) {
-      return const SizedBox();
+      return SizedBox(width: width, height: height);
     }
-    final assetName = item!.name.replaceAll(' ', '');
-    final assetKey = 'assets/doc/${assetName}_Normal.png';
-    print(assetKey);
     return Image.asset(
-      assetKey,
-      width: 100,
-      height: 100,
+      item!.assetKey,
+      width: width,
+      height: height,
       errorBuilder: (context, error, stackTrace) {
         return Container(
-          width: 100,
-          height: 100,
+          width: width,
+          height: height,
           color: Colors.deepPurple,
           child: Text(item.toString()),
+        );
+      },
+    );
+  }
+}
+
+class ToolWidget extends StatelessWidget {
+  const ToolWidget({
+    required this.tool,
+    super.key,
+    this.width = 100,
+    this.height = 100,
+  });
+
+  final MeTool tool;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      tool.assetKey,
+      width: width,
+      height: height,
+      errorBuilder: (context, error, stackTrace) {
+        return SizedBox(
+          width: width,
+          height: height,
+          child: Text(tool.name),
+        );
+      },
+    );
+  }
+}
+
+class RecipeWidget extends StatelessWidget {
+  const RecipeWidget({
+    required this.recipe,
+    super.key,
+    this.width = 100,
+    this.height = 100,
+  });
+
+  final Recipe? recipe;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    if (recipe == null) {
+      return SizedBox(width: width, height: width);
+    }
+    // TODO(eseidel): Support multiple outputs.
+    return Image.asset(
+      recipe!.outputs.keys.first.assetKey,
+      width: width,
+      height: width,
+      errorBuilder: (context, error, stackTrace) {
+        return SizedBox(
+          width: width,
+          height: width,
+          child: Text(recipe!.name),
         );
       },
     );
@@ -117,11 +197,11 @@ class CraftingBench extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final recipeName = recipe?.name ?? '?';
     return Row(
       children: [
         InputTray(items: inputs, onTap: onInputTap),
-        Text(recipeName),
+        const ToolWidget(tool: MeTool.hand),
+        RecipeWidget(recipe: recipe),
         ElevatedButton(
           onPressed: () => onCraft(inputs),
           child: const Text('Craft'),
