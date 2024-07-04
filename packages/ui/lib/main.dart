@@ -320,17 +320,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> loadRules() async {
-    final itemsText =
-        await rootBundle.loadString('packages/logic/assets/items.yaml');
-    final recipesText =
-        await rootBundle.loadString('packages/logic/assets/recipes.yaml');
-    final items = ItemSet.fromYaml(loadYaml(itemsText) as YamlMap);
-    final recipes = RecipeSet.fromYaml(loadYaml(recipesText) as YamlMap, items);
-    final tasks = TaskSet.fromYaml(
-      loadYaml(await rootBundle.loadString('packages/logic/assets/tasks.yaml'))
-          as YamlMap,
-      items,
-    );
+    Future<YamlMap> loadYamlMap(String key) {
+      final text = rootBundle.loadString('packages/logic/assets/$key.yaml');
+      return text.then((text) => loadYaml(text) as YamlMap);
+    }
+
+    final items = ItemSet.fromYaml(await loadYamlMap('items'));
+    final recipes = RecipeSet.fromYaml(await loadYamlMap('recipes'), items);
+    final tasks = TaskSet.fromYaml(await loadYamlMap('tasks'), items);
     final rules = DOC(items: items, recipes: recipes, tasks: tasks);
     setState(() {
       _rules = rules;

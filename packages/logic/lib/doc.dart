@@ -34,6 +34,7 @@ class Rules {
   }
 }
 
+// Rules specific to Dawn of Crafting.
 class DOC extends Rules {
   DOC({required super.items, required super.recipes, required super.tasks});
 
@@ -50,8 +51,9 @@ class DOC extends Rules {
   }
 
   // These are mostly helpers for tests.
+  static const String _peeledBananaName = 'Peeled Banana';
   Item get banana => items['Banana'];
-  Item get peeledBanana => items['Peeled Banana'];
-  Recipe get peeledBananaRecipe => recipes[peeledBanana.name];
+  Item get peeledBanana => items[_peeledBananaName];
+  Recipe get peeledBananaRecipe => recipes[_peeledBananaName];
   Item get goop => items['Goop'];
 }
