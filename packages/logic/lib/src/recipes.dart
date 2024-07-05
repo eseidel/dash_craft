@@ -310,33 +310,12 @@ class Cookbook {
   }
 }
 
-// Shouldn't be mutable.
-class CraftingInputs {
-  CraftingInputs({required List<ItemStack> stacks})
-      : assert(stacks.length <= 3, 'Only 3 stacks allowed.') {
-    _stacks = stacks;
-  }
-  late List<ItemStack> _stacks;
-  ItemStack? get first => _stacks.isNotEmpty ? _stacks.first : null;
-  ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
-  ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
-
-  ItemStack? stackWithMatchingType(Item type) {
-    for (final stack in _stacks) {
-      if (stack.type == type) {
-        return stack;
-      }
-    }
-    return null;
-  }
-
-  int countOf(Item type) => stackWithMatchingType(type)?.count ?? 0;
-
-  Set<Item> get uniqueItems => _stacks.map((stack) => stack.type).toSet();
-
-  void clear() {
-    _stacks = [];
-  }
+@immutable
+class CraftingInputs extends StackContainer {
+  CraftingInputs({required super.stacks}) : super(size: 3);
+  ItemStack? get first => this[0];
+  ItemStack? get second => this[1];
+  ItemStack? get third => this[2];
 }
 
 // Essentially an item instance.  Item is a type of item.

@@ -79,15 +79,23 @@ class Skills {
 
 @immutable
 class StackContainer {
-  const StackContainer({required this.size}) : stacks = const <ItemStack?>[];
+  StackContainer({required List<ItemStack> stacks, required this.size})
+      : _stacks = stacks {
+    if (stacks.length > size) {
+      throw ArgumentError('Too many stacks: $stacks');
+    }
+  }
+
+  const StackContainer.empty({required this.size})
+      : _stacks = const <ItemStack>[];
 
   @visibleForTesting
   StackContainer.fromCounts({
     required Map<Item, int> itemCounts,
     required this.size,
-  }) : stacks = _stacksFromCounts(itemCounts) {
-    if (stacks.length > size) {
-      throw ArgumentError('Too many stacks: $stacks');
+  }) : _stacks = _stacksFromCounts(itemCounts) {
+    if (_stacks.length > size) {
+      throw ArgumentError('Too many stacks: $_stacks');
     }
   }
 
@@ -106,18 +114,23 @@ class StackContainer {
     return stacks;
   }
 
-  final List<ItemStack?> stacks;
+  final List<ItemStack> _stacks;
   final int size;
+
+  ItemStack? operator [](int index) {
+    if (index >= _stacks.length) {
+      return null;
+    }
+    return _stacks[index];
+  }
 
   // Hack for now.
   bool hasRoomFor(List<Item> items) => true;
 
   Map<Item, int> get itemCounts {
     final itemToCount = <Item, int>{};
-    for (final stack in stacks) {
-      if (stack != null) {
-        itemToCount[stack.item] = (itemToCount[stack.item] ?? 0) + stack.count;
-      }
+    for (final stack in _stacks) {
+      itemToCount[stack.item] = (itemToCount[stack.item] ?? 0) + stack.count;
     }
     return Map<Item, int>.unmodifiable(itemToCount);
   }
@@ -175,14 +188,34 @@ class StackContainer {
     }
     return items;
   }
+
+  ItemStack? firstStackWithMatchingType(Item type) {
+    for (final stack in _stacks) {
+      if (stack.type == type) {
+        return stack;
+      }
+    }
+    return null;
+  }
+
+  int countOf(Item item) {
+    var count = 0;
+    for (final stack in _stacks) {
+      if (stack.item == item) {
+        count += stack.count;
+      }
+    }
+    return count;
+  }
 }
 
 @immutable
 class Inventory extends StackContainer {
-  const Inventory() : super(size: 25);
+  const Inventory.empty() : super.empty(size: 25);
   Inventory.fromCounts(Map<Item, int> itemCounts)
       : super.fromCounts(itemCounts: itemCounts, size: 25);
 
+  @override
   int countOf(Item item) => itemCounts[item] ?? 0;
 
   Inventory copyWith({List<Item>? removed, List<Item>? added}) {
@@ -254,7 +287,7 @@ class GameState {
   });
 
   const GameState.empty()
-      : inventory = const Inventory(),
+      : inventory = const Inventory.empty(),
         craftingInputs = const <Item>[],
         skills = const Skills(),
         stats = const GameStats(),
