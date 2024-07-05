@@ -107,9 +107,6 @@ abstract class Action {
   // click cost?
   // time cost?
 
-  int maxOutputCount(Item item, Skills skills);
-  double outputChance(ItemCount count, Skills skills);
-
   bool validate(GameState state);
 
   ActionResult resolve(ResolveContext context);
@@ -117,11 +114,6 @@ abstract class Action {
 
 class DummyAction extends Action {
   const DummyAction();
-
-  @override
-  int maxOutputCount(Item item, Skills skills) => 0;
-  @override
-  double outputChance(ItemCount count, Skills skills) => 0;
 
   @override
   bool validate(GameState state) => true;
@@ -134,22 +126,6 @@ class Craft extends Action {
   final Recipe recipe;
   // Tool
   // specific inputs
-
-  @override
-  int maxOutputCount(Item item, Skills skills) {
-    if (skills[recipe.skill] < recipe.skillRequired) {
-      return 0;
-    }
-    return recipe.outputCount(item);
-  }
-
-  @override
-  double outputChance(ItemCount count, Skills skills) {
-    if (recipe.outputCount(count.item) < count.count) {
-      return 0;
-    }
-    return successChance(skills);
-  }
 
   double successChance(Skills skills) {
     return 0.5;
@@ -206,21 +182,6 @@ class SendMinion extends Action {
   // with tool?
 
   // communication
-
-  @override
-  int maxOutputCount(Item item, Skills skills) {
-    return availableGatherItems(skills).contains(item) ? 1 : 0;
-  }
-
-  @override
-  double outputChance(ItemCount count, Skills skills) {
-    // TODO(eseidel): Some gathers should return multiple items.
-    if (count.count != 1) return 0;
-
-    final availableItems = availableGatherItems(skills);
-    if (!availableItems.contains(count.item)) return 0;
-    return 1.0 / availableItems.length;
-  }
 
   TaskType get task {
     // compute from context.
@@ -299,18 +260,6 @@ class Feed extends Action {
   // inputs
   final List<Item> inputs;
   final TargetHuman target;
-
-  @override
-  int maxOutputCount(Item item, Skills skills) {
-    // TODO(eseidel): Handle eating things in shells, pots, etc.
-    return 0;
-  }
-
-  @override
-  double outputChance(ItemCount count, Skills skills) {
-    // This also needs to handle output chance for shells, pots, etc.
-    return 0;
-  }
 
   @override
   bool validate(GameState state) {
