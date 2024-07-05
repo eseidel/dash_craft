@@ -10,3 +10,6 @@ items:
   energy: 2
 - name: 'Coconut'
   energy: -2
+- name: 'Opened Coconut'
+- name: 'Peeled Orange'
+  energy: 3

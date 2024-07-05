@@ -402,7 +402,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onInputTap(Item item) {
-    if (game.state.inventory.hasRoomFor([item])) {
+    if (!game.state.inventory.hasRoomFor([item])) {
       setState(() {
         errorMessage = 'Inventory full';
       });

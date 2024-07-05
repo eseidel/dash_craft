@@ -5,3 +5,15 @@ recipes:
     "Peeled Banana": 1
   tool: "hand"
   skill: "mealPreparing"
+- in:
+    "Orange": 1
+  out:
+    "Peeled Orange": 1
+  tool: "hand"
+  skill: "mealPreparing"
+- in:
+    "Coconut": 1
+  out:
+    "Opened Coconut": 2
+  tool: "stone"
+  skill: "mealPreparing"
