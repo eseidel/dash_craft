@@ -313,6 +313,18 @@ class Cookbook {
 @immutable
 class CraftingInputs extends StackContainer {
   CraftingInputs({required super.stacks}) : super(size: 3);
+  const CraftingInputs.empty() : super.empty(size: 3);
+
+  // TODO(eseidel): Preserve stack order.
+  CraftingInputs copyWith({List<Item>? removed, List<Item>? added}) {
+    final counts = itemCountsAfterEdits(
+      removed: removed ?? [],
+      added: added ?? [],
+    );
+    final stacks = StackContainer.stacksFromCounts(counts);
+    return CraftingInputs(stacks: stacks);
+  }
+
   ItemStack? get first => this[0];
   ItemStack? get second => this[1];
   ItemStack? get third => this[2];
@@ -350,6 +362,8 @@ class ItemStack {
     if (from.type != type) return false;
     return spaceLeft >= from.count;
   }
+
+  List<Item> toList() => List.filled(count, type);
 }
 
 // class ItemContainer {

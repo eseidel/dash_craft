@@ -93,13 +93,13 @@ class StackContainer {
   StackContainer.fromCounts({
     required Map<Item, int> itemCounts,
     required this.size,
-  }) : _stacks = _stacksFromCounts(itemCounts) {
+  }) : _stacks = stacksFromCounts(itemCounts) {
     if (_stacks.length > size) {
       throw ArgumentError('Too many stacks: $_stacks');
     }
   }
 
-  static List<ItemStack> _stacksFromCounts(Map<Item, int> itemCounts) {
+  static List<ItemStack> stacksFromCounts(Map<Item, int> itemCounts) {
     final stacks = <ItemStack>[];
     for (final entry in itemCounts.entries) {
       final item = entry.key;
@@ -125,7 +125,7 @@ class StackContainer {
   }
 
   // Hack for now.
-  bool hasRoomFor(List<Item> items) => true;
+  bool hasRoomFor(ItemStack stack) => true;
 
   Map<Item, int> get itemCounts {
     final itemToCount = <Item, int>{};
@@ -225,31 +225,6 @@ class Inventory extends StackContainer {
   }
 }
 
-// class GameStateBuilder {
-//   final GameState initialState;
-//   final Random random;
-
-//   List<Item> removed = [];
-//   List<Item> added = [];
-
-//   double nextDouble() => 1.0;
-
-//   GameStateBuilder.from(this.initialState, this.random);
-
-//   Skills get skills => initialState.skills;
-
-//   void addItem(Item item) => added.add(item);
-//   void removeItem(Item item) => removed.add(item);
-
-//   GameState build() {
-//     return initialState.copyWith(
-//       inventory:
-//           initialState.inventory.copyWith(removed: removed, added: added),
-//       stats: initialState.stats.copyAdding(timeInMilliseconds: 200, clicks: 1),
-//     );
-//   }
-// }
-
 class GameStats {
   const GameStats({this.clicks = 0, this.timeInMilliseconds = 0});
   final int clicks;
@@ -281,7 +256,7 @@ class GameState {
 
   const GameState.empty()
       : inventory = const Inventory.empty(),
-        craftingInputs = const <Item>[],
+        craftingInputs = const CraftingInputs.empty(),
         skills = const Skills(),
         stats = const GameStats(),
         meEnergy = meMaxEnergy,
@@ -289,8 +264,7 @@ class GameState {
   static const meMaxEnergy = 100;
   static const minionMaxEnergy = 100;
 
-  // TODO(eseidel): Use CraftingInputs and stacks.
-  final List<Item> craftingInputs;
+  final CraftingInputs craftingInputs;
   final Inventory inventory;
   final Skills skills;
   final int meEnergy;
@@ -306,7 +280,7 @@ class GameState {
     int? meEnergy,
     int? minionEnergy,
     GameStats? stats,
-    List<Item>? craftingInputs,
+    CraftingInputs? craftingInputs,
   }) {
     return GameState(
       inventory: inventory ?? this.inventory,

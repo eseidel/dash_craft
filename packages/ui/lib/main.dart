@@ -34,67 +34,91 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class TappableItem extends StatelessWidget {
-  const TappableItem({required this.item, required this.onTap, super.key});
+class TappableItemStack extends StatelessWidget {
+  const TappableItemStack({
+    required this.stack,
+    required this.onTap,
+    super.key,
+  });
 
-  final Item? item;
-  final void Function(Item) onTap;
+  final ItemStack? stack;
+  final void Function(ItemStack) onTap;
 
   @override
   Widget build(BuildContext context) {
-    if (item == null) {
-      return ItemWidget(item: item);
+    if (stack == null) {
+      return ItemStackWidget(stack: stack);
     }
     return GestureDetector(
-      child: ItemWidget(item: item),
-      onTap: () => onTap.call(item!),
+      child: ItemStackWidget(stack: stack),
+      onTap: () => onTap.call(stack!),
     );
   }
 }
 
+String _assetKey(String name) {
+  final assetName = name.replaceAll(' ', '');
+  return 'assets/doc/${assetName}_Normal.png';
+}
+
 extension on Item {
-  String get assetKey {
-    final assetName = name.replaceAll(' ', '');
-    return 'assets/doc/${assetName}_Normal.png';
-  }
+  String get assetKey => _assetKey(name.replaceAll(' ', ''));
 }
 
 extension on MeTool {
-  String get assetKey {
-    final assetName = name.replaceAll(' ', '');
-    return 'assets/doc/${assetName}_Normal.png';
-  }
+  String get assetKey => _assetKey(name.replaceAll(' ', ''));
 }
 
-class ItemWidget extends StatelessWidget {
-  const ItemWidget({
-    required this.item,
+class ItemStackWidget extends StatelessWidget {
+  const ItemStackWidget({
+    required this.stack,
     super.key,
     this.width = 100,
     this.height = 100,
   });
 
-  final Item? item;
+  final ItemStack? stack;
   final double width;
   final double height;
 
   @override
   Widget build(BuildContext context) {
-    if (item == null) {
+    if (stack == null) {
       return SizedBox(width: width, height: height);
     }
-    return Image.asset(
-      item!.assetKey,
+    final item = stack!.item;
+    final backgroundKey = _assetKey('ItemBoxEmpty');
+    return SizedBox(
       width: width,
       height: height,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: width,
-          height: height,
-          color: Colors.deepPurple,
-          child: Text(item.toString()),
-        );
-      },
+      child: Stack(
+        children: [
+          Image.asset(
+            backgroundKey,
+            errorBuilder: (context, error, stackTrace) {
+              return const ColoredBox(
+                color: Colors.grey,
+              );
+            },
+          ),
+          Image.asset(
+            item.assetKey,
+            errorBuilder: (context, error, stackTrace) {
+              return Text(item.toString());
+            },
+          ),
+          if (stack!.count > 1)
+            Positioned(
+              right: 5,
+              top: 2,
+              child: Text(
+                textAlign: TextAlign.right,
+                stack!.count.toString(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -162,10 +186,10 @@ class RecipeWidget extends StatelessWidget {
 }
 
 class InputTray extends StatelessWidget {
-  const InputTray({required this.items, required this.onTap, super.key});
+  const InputTray({required this.inputs, required this.onTap, super.key});
 
-  final List<Item> items;
-  final void Function(Item) onTap;
+  final CraftingInputs inputs;
+  final void Function(ItemStack) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -174,8 +198,7 @@ class InputTray extends StatelessWidget {
       color: Colors.deepPurple,
       child: Row(
         children: [0, 1, 2].map((index) {
-          final item = items.length > index ? items[index] : null;
-          return TappableItem(item: item, onTap: onTap);
+          return TappableItemStack(stack: inputs[index], onTap: onTap);
         }).toList(),
       ),
     );
@@ -191,16 +214,16 @@ class CraftingBench extends StatelessWidget {
     super.key,
   });
 
-  final List<Item> inputs;
+  final CraftingInputs inputs;
   final Recipe? recipe;
-  final void Function(Item) onInputTap;
-  final void Function(List<Item> inputs) onCraft;
+  final void Function(ItemStack) onInputTap;
+  final void Function(CraftingInputs inputs) onCraft;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        InputTray(items: inputs, onTap: onInputTap),
+        InputTray(inputs: inputs, onTap: onInputTap),
         const ToolWidget(tool: MeTool.hand),
         RecipeWidget(recipe: recipe),
         ElevatedButton(
@@ -219,8 +242,8 @@ class InventoryGrid extends StatelessWidget {
     super.key,
   });
 
-  final List<Item> inventory;
-  final void Function(Item) onTap;
+  final Inventory inventory;
+  final void Function(ItemStack) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -232,8 +255,7 @@ class InventoryGrid extends StatelessWidget {
           crossAxisCount: 5,
         ),
         itemBuilder: (BuildContext ctx, index) {
-          final item = inventory.length > index ? inventory[index] : null;
-          return TappableItem(item: item, onTap: onTap);
+          return TappableItemStack(stack: inventory[index], onTap: onTap);
         },
       ),
     );
@@ -271,13 +293,13 @@ class GameView extends StatelessWidget {
     super.key,
   });
 
-  final List<Item> inputs;
-  final List<Item> inventory;
+  final CraftingInputs inputs;
+  final Inventory inventory;
   final String? errorMessage;
   final void Function() onGather;
-  final void Function(Item) onInventoryTap;
-  final void Function(Item) onInputTap;
-  final void Function(List<Item> inputs) onCraft;
+  final void Function(ItemStack) onInventoryTap;
+  final void Function(ItemStack) onInputTap;
+  final void Function(CraftingInputs inputs) onCraft;
   final void Function() onShowMySkills;
   final void Function() onShowMinionSkills;
   final Recipe? recipe;
@@ -361,24 +383,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Recipe? _recipeFor(List<Item> items) {
-    final itemCounts = <Item, int>{};
-    for (final item in items) {
-      itemCounts[item] = (itemCounts[item] ?? 0) + 1;
-    }
-    if (itemCounts.isEmpty) {
-      return null;
-    }
-    // This should never happen, but isn't a valid recipe.
-    if (itemCounts.length > 3) {
-      return null;
-    }
-    final stacks = <ItemStack>[];
-    for (final entry in itemCounts.entries) {
-      stacks.add(ItemStack(type: entry.key, count: entry.value));
-    }
-
-    final result = doc.cookbook.findRecipe(CraftingInputs(stacks: stacks));
+  Recipe? _recipeFor(CraftingInputs inputs) {
+    final result = doc.cookbook.findRecipe(inputs);
     if (result == null) {
       return null;
     }
@@ -396,8 +402,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onInventoryTap(Item item) {
-    if (game.state.craftingInputs.length >= inputSize) {
+  void onInventoryTap(ItemStack stack) {
+    if (game.state.craftingInputs.hasRoomFor(stack)) {
       setState(() {
         errorMessage = 'Input tray is full';
       });
@@ -406,14 +412,15 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       // We don't have a Transfer action yet, so implement it ourselves.
       game.state = game.state.copyWith(
-        craftingInputs: List.from(game.state.craftingInputs)..add(item),
-        inventory: game.state.inventory.copyWith(removed: [item]),
+        craftingInputs:
+            game.state.craftingInputs.copyWith(added: stack.toList()),
+        inventory: game.state.inventory.copyWith(removed: stack.toList()),
       );
     });
   }
 
-  void onInputTap(Item item) {
-    if (!game.state.inventory.hasRoomFor([item])) {
+  void onInputTap(ItemStack stack) {
+    if (!game.state.inventory.hasRoomFor(stack)) {
       setState(() {
         errorMessage = 'Inventory full';
       });
@@ -422,13 +429,14 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       // We don't have a Transfer action yet, so implement it ourselves.
       game.state = game.state.copyWith(
-        craftingInputs: List.from(game.state.craftingInputs)..remove(item),
-        inventory: game.state.inventory.copyWith(added: [item]),
+        craftingInputs:
+            game.state.craftingInputs.copyWith(removed: stack.toList()),
+        inventory: game.state.inventory.copyWith(added: stack.toList()),
       );
     });
   }
 
-  void onCraft(List<Item> inputs) {
+  void onCraft(CraftingInputs inputs) {
     // TODO(eseidel): Craft based on rules + current state.
     // Should use Game.apply.
     final recipe = _recipeFor(inputs);
@@ -444,16 +452,18 @@ class _MyHomePageState extends State<MyHomePage> {
         toAdd.add(entry.key);
       }
     }
-    if (!game.state.inventory.hasRoomFor(toAdd)) {
-      setState(() {
-        errorMessage = 'Inventory full';
-      });
-      return;
-    }
+    // This should only fail if the 100% chance outputs don't fit.
+    // Sometimes outputs will just be discarded if they don't fit.
+    // if (!game.state.inventory.hasRoomFor(toAdd)) {
+    //   setState(() {
+    //     errorMessage = 'Inventory full';
+    //   });
+    //   return;
+    // }
 
     setState(() {
       game.state = game.state.copyWith(
-        craftingInputs: [],
+        craftingInputs: const CraftingInputs.empty(),
         inventory: game.state.inventory.copyWith(added: toAdd),
       );
     });
@@ -490,8 +500,8 @@ class _MyHomePageState extends State<MyHomePage> {
     final inputs = game.state.craftingInputs;
     return Scaffold(
       body: GameView(
-        inputs: inputs,
-        inventory: game.state.inventory.allItems,
+        inputs: game.state.craftingInputs,
+        inventory: game.state.inventory,
         errorMessage: errorMessage,
         onGather: onGather,
         onInventoryTap: onInventoryTap,
