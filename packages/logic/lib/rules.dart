@@ -32,6 +32,8 @@ class Rules {
       }
     }
   }
+
+  Cookbook get cookbook => Cookbook(recipes);
 }
 
 // Rules specific to Dawn of Crafting.

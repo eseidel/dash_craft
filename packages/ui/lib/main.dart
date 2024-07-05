@@ -353,13 +353,31 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Recipe? _recipeFor(List<Item> items) {
-    if (items.length != 1) {
+    final itemCounts = <Item, int>{};
+    for (final item in items) {
+      itemCounts[item] = (itemCounts[item] ?? 0) + 1;
+    }
+    if (itemCounts.isEmpty) {
       return null;
     }
-    if (items[0] == doc.banana) {
-      return doc.peeledBananaRecipe;
+    // This should never happen, but isn't a valid recipe.
+    if (itemCounts.length > 3) {
+      return null;
     }
-    return null;
+    final stacks = <ItemStack>[];
+    for (final entry in itemCounts.entries) {
+      stacks.add(ItemStack(type: entry.key, count: entry.value));
+    }
+
+    final result = doc.cookbook.findRecipe(CraftingInputs(stacks: stacks));
+    if (result == null) {
+      return null;
+    }
+    // We don't yet support multiples.
+    if (result.count > 1) {
+      return null;
+    }
+    return result.recipe;
   }
 
   void onGather() {

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:logic/game.dart';
 import 'package:logic/rules.dart';
@@ -100,6 +102,8 @@ class Recipe {
   List<Item> get inputAsList => flatten(inputs);
   // Does not respect percentage-based outputs.
   List<Item> get outputAsList => flatten(outputs);
+
+  Set<Item> get uniqueItems => inputs.keys.toSet();
 
   @override
   String toString() {
@@ -277,127 +281,110 @@ class RecipeLookup {
   final int count;
 }
 
-// class Cookbook {
-//   int inputsMatchMultipler(CraftingInputs inputs, Recipe recipe) {
-//     var inputTypes = inputs.sortedTypes;
-//     var recipeTypes = recipe.sortedInputTypes;
-//     if (!const IterableEquality().equals(inputTypes, recipeTypes)) {
-//       return 0;
-//     }
-//     int multiplier = 0;
-//     for (int i = 0; i < recipeTypes.length; i++) {
-//       int inputCount = inputs.countOf(recipeTypes[i]);
-//       int recipeCount = recipe.countOf(recipeTypes.first);
-//       int remainder = inputCount % recipeCount;
-//       if (remainder != 0) return 0;
-//       int newMultipler = inputCount ~/ recipeCount;
-//       if (multiplier == 0) {
-//         multiplier = newMultipler;
-//       } else if (multiplier != newMultipler) {
-//         return 0;
-//       }
-//     }
-//     return multiplier;
-//   }
+@immutable
+class Cookbook {
+  const Cookbook(this.recipes);
 
-//   RecipeLookup? findRecipe(CraftingInputs inputs) {
-//     // Some recipes use stacks.
-//     for (var recipe in recipes) {
-//       int multipler = inputsMatchMultipler(inputs, recipe);
-//       if (multipler > 0) {
-//         return RecipeLookup(recipe, multipler);
-//       }
-//     }
-//     return null;
-//   }
-// }
+  final RecipeSet recipes;
+
+  int inputsMatchMultipler(CraftingInputs inputs, Recipe recipe) {
+    final inputTypes = inputs.uniqueItems.toList()..sort();
+    final recipeTypes = recipe.uniqueItems.toList()..sort();
+    if (!const IterableEquality<Item>().equals(inputTypes, recipeTypes)) {
+      return 0;
+    }
+    var multiplier = 0;
+    for (var i = 0; i < recipeTypes.length; i++) {
+      final inputCount = inputs.countOf(recipeTypes[i]);
+      final recipeCount = recipe.inputCount(recipeTypes.first);
+      final remainder = inputCount % recipeCount;
+      if (remainder != 0) return 0;
+      final newMultipler = inputCount ~/ recipeCount;
+      if (multiplier == 0) {
+        multiplier = newMultipler;
+      } else if (multiplier != newMultipler) {
+        return 0;
+      }
+    }
+    return multiplier;
+  }
+
+  RecipeLookup? findRecipe(CraftingInputs inputs) {
+    // Some recipes use stacks.
+    for (final recipe in recipes.all) {
+      final multipler = inputsMatchMultipler(inputs, recipe);
+      if (multipler > 0) {
+        return RecipeLookup(recipe, multipler);
+      }
+    }
+    return null;
+  }
+}
 
 // Shouldn't be mutable.
-// class CraftingInputs {
-//   late List<ItemStack> _stacks;
+class CraftingInputs {
+  CraftingInputs({required List<ItemStack> stacks})
+      : assert(stacks.length <= 3, 'Only 3 stacks allowed.') {
+    _stacks = stacks;
+  }
+  late List<ItemStack> _stacks;
+  ItemStack? get first => _stacks.isNotEmpty ? _stacks.first : null;
+  ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
+  ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
 
-//   CraftingInputs({List<ItemStack>? stacks})
-//       : assert(stacks == null || stacks.length <= 3) {
-//     _stacks = stacks ?? [];
-//   }
-//   ItemStack? get first => _stacks.isNotEmpty ? _stacks.first : null;
-//   ItemStack? get second => _stacks.length > 1 ? _stacks[1] : null;
-//   ItemStack? get third => _stacks.length > 2 ? _stacks[2] : null;
+  ItemStack? stackWithMatchingType(Item type) {
+    for (final stack in _stacks) {
+      if (stack.type == type) {
+        return stack;
+      }
+    }
+    return null;
+  }
 
-//   ItemStack? stackWithMatchingType(Item type) {
-//     for (var stack in _stacks) {
-//       if (stack.type == type) {
-//         return stack;
-//       }
-//     }
-//     return null;
-//   }
+  int countOf(Item type) => stackWithMatchingType(type)?.count ?? 0;
 
-//   int countOf(Item type) => stackWithMatchingType(type)?.count ?? 0;
+  Set<Item> get uniqueItems => _stacks.map((stack) => stack.type).toSet();
 
-//   List<Item> get sortedTypes {
-//     var types = _stacks.map((stack) => stack.type).toList();
-//     types.sort();
-//     return types;
-//   }
+  void clear() {
+    _stacks = [];
+  }
+}
 
-//   void clear() {
-//     _stacks = [];
-//   }
+class ItemStack {
+  ItemStack({required this.type, this.count = 1});
+  final Item type;
+  int count;
 
-//   bool addOneFrom(ItemStack toAdd) {
-//     assert(toAdd.count > 0);
-//     // Does this durability match?  Should it?
-//     var existingStack = stackWithMatchingType(toAdd.type);
-//     if (existingStack != null) {
-//       var haveSpace = existingStack.haveSpaceFor(toAdd);
-//       if (!haveSpace) {
-//         print('Item already on table, but not enough space!');
-//         return false;
-//       }
-//       existingStack.takeFrom(toAdd, limit: 1);
-//       return true;
-//     }
-//     if (_stacks.length >= 3) {
-//       print('crafting table already has 3 stacks!');
-//       return false;
-//     }
-//     _stacks.add(toAdd.takeOneAsNewStack());
-//     return true;
-//   }
-// }
+  static const int stackSize = 100;
 
-// class ItemStack {
-//   final Item type;
-//   int count;
-//   ItemStack({required this.type, this.count = 1});
+  // int get energy => type.energy * count;
+  int get spaceLeft => stackSize - count;
 
-//   // int get energy => type.energy * count;
-//   int get spaceLeft => type.stackSize - count;
+  void takeFrom(ItemStack from, {int limit = stackSize}) {
+    if (from.type != type) {
+      throw ArgumentError("Can't add non-matching item type.");
+    }
+    final int maxCouldTake = min(from.count, spaceLeft);
+    final int taking = min(maxCouldTake, limit);
+    count += taking;
+    from.count -= taking;
+  }
 
-//   void takeFrom(ItemStack from, {int limit = 100}) {
-//     if (from.type != type) {
-//       throw ArgumentError('Can\'t add non-matching item type.');
-//     }
-//     int maxCouldTake = min(from.count, spaceLeft);
-//     int taking = min(maxCouldTake, limit);
-//     count += taking;
-//     from.count -= taking;
-//   }
+  bool haveSpaceFor(ItemStack from) {
+    if (from.type != type) return false;
+    return spaceLeft >= from.count;
+  }
 
-//   bool haveSpaceFor(ItemStack from) {
-//     if (from.type != type) return false;
-//     return spaceLeft >= from.count;
-//   }
-
-//   // Not sure this is safe.
-//   ItemStack takeOneAsNewStack() {
-//     assert(count > 1);
-//     count -= 1;
-//     // Also copy durability!
-//     return ItemStack(type: type, count: 1);
-//   }
-// }
+  // Not sure this is safe.
+  // ItemStack takeOneAsNewStack() {
+  //   assert(
+  //     count > 1,
+  //   );
+  //   count -= 1;
+  //   // Also copy durability!
+  //   return ItemStack(type: type);
+  // }
+}
 
 // class ItemContainer {
 //   final int capacity;
