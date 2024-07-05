@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logic/game.dart';
+import 'package:logic/logic.dart';
 import 'package:logic/rules.dart';
 import 'package:yaml/yaml.dart';
 
 const inputSize = 3;
-const inventorySize = 25;
 
 void main() {
   runApp(const MyApp());
@@ -321,8 +321,6 @@ class GameView extends StatelessWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final inputs = <Item>[];
-  final inventory = <Item>[];
   late final DOC? _rules;
   String? errorMessage;
   Game game = Game();
@@ -381,40 +379,47 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onGather() {
+    final action = SendMinion(doc: doc);
     setState(() {
-      // TODO(eseidel): Gather based on rules + current state.
-      inventory.add(doc.banana);
+      game.apply(action);
     });
   }
 
   void onInventoryTap(Item item) {
-    if (inputs.length >= inputSize) {
+    if (game.state.craftingInputs.length >= inputSize) {
       setState(() {
         errorMessage = 'Input tray is full';
       });
       return;
     }
     setState(() {
-      inventory.remove(item);
-      inputs.add(item);
+      // We don't have a Transfer action yet, so implement it ourselves.
+      game.state = game.state.copyWith(
+        craftingInputs: List.from(game.state.craftingInputs)..add(item),
+        inventory: game.state.inventory.copyWith(removed: [item]),
+      );
     });
   }
 
   void onInputTap(Item item) {
-    if (inventory.length >= inventorySize) {
+    if (game.state.inventory.hasRoomFor([item])) {
       setState(() {
         errorMessage = 'Inventory full';
       });
       return;
     }
     setState(() {
-      inputs.remove(item);
-      inventory.add(item);
+      // We don't have a Transfer action yet, so implement it ourselves.
+      game.state = game.state.copyWith(
+        craftingInputs: List.from(game.state.craftingInputs)..remove(item),
+        inventory: game.state.inventory.copyWith(added: [item]),
+      );
     });
   }
 
   void onCraft(List<Item> inputs) {
     // TODO(eseidel): Craft based on rules + current state.
+    // Should use Game.apply.
     final recipe = _recipeFor(inputs);
     if (recipe == null) {
       setState(() {
@@ -422,13 +427,24 @@ class _MyHomePageState extends State<MyHomePage> {
       });
       return;
     }
-    setState(() {
-      inputs.clear();
-      for (final entry in recipe.outputs.entries) {
-        for (var i = 0; i < entry.value; i++) {
-          inventory.add(entry.key);
-        }
+    final toAdd = <Item>[];
+    for (final entry in recipe.outputs.entries) {
+      for (var i = 0; i < entry.value; i++) {
+        toAdd.add(entry.key);
       }
+    }
+    if (!game.state.inventory.hasRoomFor(toAdd)) {
+      setState(() {
+        errorMessage = 'Inventory full';
+      });
+      return;
+    }
+
+    setState(() {
+      game.state = game.state.copyWith(
+        craftingInputs: [],
+        inventory: game.state.inventory.copyWith(added: toAdd),
+      );
     });
   }
 
@@ -460,10 +476,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final inputs = game.state.craftingInputs;
     return Scaffold(
       body: GameView(
         inputs: inputs,
-        inventory: inventory,
+        inventory: game.state.inventory.allItems,
         errorMessage: errorMessage,
         onGather: onGather,
         onInventoryTap: onInventoryTap,

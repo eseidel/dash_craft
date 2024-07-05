@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:logic/logger.dart';
+import 'package:logic/rules.dart';
 import 'package:logic/src/action.dart';
 import 'package:logic/src/items.dart';
 import 'package:meta/meta.dart';
@@ -78,12 +79,14 @@ class Skills {
 }
 
 @immutable
-class Inventory {
-  const Inventory() : itemToCount = const {};
+class ItemContainer {
+  const ItemContainer() : itemToCount = const {};
 
-  const Inventory.fromCounts(this.itemToCount);
-  Inventory.fromItems(List<Item> items) : itemToCount = toItemCounts(items);
+  const ItemContainer.fromCounts(this.itemToCount);
   final Map<Item, int> itemToCount;
+
+  // Hack for now.
+  bool hasRoomFor(List<Item> items) => true;
 
   static Map<Item, int> toItemCounts(List<Item> items) {
     final itemToCount = <Item, int>{};
@@ -93,11 +96,12 @@ class Inventory {
     return Map<Item, int>.unmodifiable(itemToCount);
   }
 
-  int countOf(Item item) => itemToCount[item] ?? 0;
-
-  Inventory copyWith({List<Item>? removed, List<Item>? added}) {
+  Map<Item, int> itemCountsAfterEdits({
+    required List<Item> removed,
+    required List<Item> added,
+  }) {
     final newItemCounts = Map<Item, int>.from(itemToCount);
-    if (removed != null && removed.isNotEmpty) {
+    if (removed.isNotEmpty) {
       for (final toRemove in removed) {
         assert(newItemCounts[toRemove] != null, 'Item $toRemove not in $this');
         assert(newItemCounts[toRemove]! > 0, 'Item $toRemove not in $this');
@@ -111,21 +115,49 @@ class Inventory {
         }
       }
     }
-    if (added != null && added.isNotEmpty) {
+    if (added.isNotEmpty) {
       for (final toAdd in added) {
         newItemCounts[toAdd] = (newItemCounts[toAdd] ?? 0) + 1;
       }
     }
-    return Inventory.fromCounts(newItemCounts);
+    return Map<Item, int>.unmodifiable(newItemCounts);
   }
 
   // This will just be item (types) when Inventory hold stacks?
   Iterable<Item> get uniqueItems {
     assert(
       itemToCount.entries.every((element) => element.value > 0),
-      'Inventory has negative counts: $itemToCount',
+      'Container has negative counts: $itemToCount',
     );
     return itemToCount.keys;
+  }
+
+  List<Item> get allItems {
+    final items = <Item>[];
+    for (final entry in itemToCount.entries) {
+      for (var i = 0; i < entry.value; i++) {
+        items.add(entry.key);
+      }
+    }
+    return items;
+  }
+}
+
+@immutable
+class Inventory extends ItemContainer {
+  const Inventory() : super();
+  const Inventory.fromCounts(super.itemToCount) : super.fromCounts();
+  Inventory.fromItems(List<Item> items)
+      : super.fromCounts(ItemContainer.toItemCounts(items));
+
+  int countOf(Item item) => itemToCount[item] ?? 0;
+
+  Inventory copyWith({List<Item>? removed, List<Item>? added}) {
+    final newItemCounts = itemCountsAfterEdits(
+      removed: removed ?? [],
+      added: added ?? [],
+    );
+    return Inventory.fromCounts(newItemCounts);
   }
 
   @override
@@ -185,10 +217,12 @@ class GameState {
     required this.meEnergy,
     required this.minionEnergy,
     required this.stats,
+    required this.craftingInputs,
   });
 
   const GameState.empty()
       : inventory = const Inventory(),
+        craftingInputs = const <Item>[],
         skills = const Skills(),
         stats = const GameStats(),
         meEnergy = 0,
@@ -196,6 +230,8 @@ class GameState {
   static const meMaxEnergy = 100;
   static const minionMaxEnergy = 100;
 
+  // TODO(eseidel): Use CraftingInputs and stacks.
+  final List<Item> craftingInputs;
   final Inventory inventory;
   final Skills skills;
   final int meEnergy;
@@ -211,6 +247,7 @@ class GameState {
     int? meEnergy,
     int? minionEnergy,
     GameStats? stats,
+    List<Item>? craftingInputs,
   }) {
     return GameState(
       inventory: inventory ?? this.inventory,
@@ -218,6 +255,7 @@ class GameState {
       meEnergy: meEnergy ?? this.meEnergy,
       minionEnergy: minionEnergy ?? this.minionEnergy,
       stats: stats ?? this.stats,
+      craftingInputs: craftingInputs ?? this.craftingInputs,
     );
   }
 
