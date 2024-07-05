@@ -170,14 +170,7 @@ class StackContainer {
     return Map<Item, int>.unmodifiable(newItemCounts);
   }
 
-  // This will just be item (types) when Inventory hold stacks?
-  Iterable<Item> get uniqueItems {
-    assert(
-      itemCounts.entries.every((element) => element.value > 0),
-      'Container has negative counts: $itemCounts',
-    );
-    return itemCounts.keys;
-  }
+  Iterable<Item> get uniqueItems => _stacks.map((stack) => stack.item).toSet();
 
   List<Item> get allItems {
     final items = <Item>[];
