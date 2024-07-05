@@ -17,3 +17,9 @@ recipes:
     "Opened Coconut": 2
   tool: "stone"
   skill: "mealPreparing"
+- in:
+    "Opened Coconut": 1
+  out:
+    "Raw Coconut": 1
+  tool: "sharpStone"
+  skill: "mealPreparing"

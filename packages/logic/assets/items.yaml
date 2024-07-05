@@ -9,7 +9,9 @@ items:
 - name: 'Orange'
   energy: 2
 - name: 'Coconut'
-  energy: -2
 - name: 'Opened Coconut'
+  energy: 2
 - name: 'Peeled Orange'
   energy: 3
+- name: 'Raw Coconut'
+  energy: 8

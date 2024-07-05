@@ -266,6 +266,8 @@ class GameView extends StatelessWidget {
     required this.recipe,
     required this.onShowMySkills,
     required this.onShowMinionSkills,
+    required this.meEnergy,
+    required this.minionEnergy,
     super.key,
   });
 
@@ -279,6 +281,8 @@ class GameView extends StatelessWidget {
   final void Function() onShowMySkills;
   final void Function() onShowMinionSkills;
   final Recipe? recipe;
+  final int meEnergy;
+  final int minionEnergy;
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +300,13 @@ class GameView extends StatelessWidget {
                 onPressed: onShowMinionSkills,
                 child: const Text('Minion'),
               ),
+            ],
+          ),
+          Row(
+            children: [
+              Text(meEnergy.toString()),
+              const SizedBox(width: 20),
+              Text(minionEnergy.toString()),
             ],
           ),
           ElevatedButton(onPressed: onGather, child: const Text('Gather')),
@@ -489,6 +500,8 @@ class _MyHomePageState extends State<MyHomePage> {
         recipe: _recipeFor(inputs),
         onShowMySkills: onShowMySkills,
         onShowMinionSkills: onShowMinionSkills,
+        meEnergy: game.state.meEnergy,
+        minionEnergy: game.state.minionEnergy,
       ),
     );
   }

@@ -225,8 +225,8 @@ class GameState {
         craftingInputs = const <Item>[],
         skills = const Skills(),
         stats = const GameStats(),
-        meEnergy = 0,
-        minionEnergy = 0;
+        meEnergy = meMaxEnergy,
+        minionEnergy = minionMaxEnergy;
   static const meMaxEnergy = 100;
   static const minionMaxEnergy = 100;
 
