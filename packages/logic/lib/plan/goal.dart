@@ -54,11 +54,13 @@ Action pickAction(List<Action> actions) {
 }
 
 Iterable<Action> actionsWithOutput(DOC doc, Item output) sync* {
+  // TODO(eseidel): check skill levels?
   final recipes = doc.recipesWithOutput(output);
   for (final recipe in recipes) {
     yield Craft(recipe: recipe);
   }
-  if (output.gatherSkill != null) {
+  final tasks = doc.tasksWithOutput(output);
+  for (final _ in tasks) {
     // TODO(eseidel): Should have a specific output?
     yield SendMinion(doc: doc);
   }

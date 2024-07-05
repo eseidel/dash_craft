@@ -1,23 +1,17 @@
 import 'package:yaml/yaml.dart';
 
 class Item {
-  const Item({
-    required this.name,
-    this.gatherSkill,
-    this.energy,
-  });
+  const Item({required this.name, this.energy});
 
   factory Item.fromYaml(YamlMap yaml) {
     return Item(
       name: yaml['name'] as String,
       energy: yaml['energy'] as int?,
-      gatherSkill: yaml['gatherSkill'] as int?,
     );
   }
 
   final String name;
   final int? energy;
-  final int? gatherSkill;
 
   @override
   String toString() => name;
@@ -46,52 +40,6 @@ class ItemSet {
   }
 }
 
-// enum ItemKind {
-//   other,
-//   food,
-//   tool,
-// }
-
-// @immutable
-// class Item {
-//   const Item.other({
-//     required this.name,
-//     this.energy,
-//     this.gatherSkill,
-//   })  : durability = 0,
-//         toolLevel = null,
-//         kind = ItemKind.other;
-
-//   const Item.food({required this.name, required this.energy, this.gatherSkill})
-//       : durability = 0,
-//         toolLevel = null,
-//         kind = ItemKind.food;
-//   const Item.tool({
-//     required this.name,
-//     required this.durability,
-//     this.gatherSkill,
-//     this.toolLevel,
-//   })  : energy = null,
-//         kind = ItemKind.tool;
-//   // name
-//   // is tool
-//   // max durability
-//   // recipe
-//   // max stack size
-//   // energy (burn, eat, use?)
-//   final String name;
-//   final ItemKind kind;
-//   // Is everything allowed to stack?
-//   // Are things which can't stack just 1 offs?
-//   final int durability;
-//   final int? energy;
-//   final int? gatherSkill;
-//   final int? toolLevel;
-
-//   @override
-//   String toString() => name;
-// }
-
 // // This should be yaml.
 // const banana = Item.food(name: 'Banana', energy: 1, gatherSkill: 0);
 // const orange = Item.food(name: 'Orange', energy: 1, gatherSkill: 0);
@@ -112,28 +60,6 @@ class ItemSet {
 // const eggplant = Item.food(name: 'Eggplant', energy: 2, gatherSkill: 50);
 // const apple = Item.food(name: 'Apple', energy: 2, gatherSkill: 55);
 // const potato = Item.food(name: 'Potato', energy: 2, gatherSkill: 60);
-
-// List<Item> gatherItems = const [
-//   banana,
-//   orange,
-//   coconut,
-//   stone,
-//   peanut,
-//   blueberry,
-//   redberry,
-//   vine,
-//   stick,
-//   walnut,
-//   chestnut,
-//   lettuce,
-//   tomato,
-//   carrot,
-//   eggplant,
-//   apple,
-//   potato,
-// ];
-
-// const goop = Item.food(name: 'Goop', energy: -1);
 
 // // Are these the same as recipes?
 // const peeledBanana = Item.food(name: 'Peeled Banana', energy: 3);

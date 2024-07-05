@@ -10,15 +10,6 @@ import 'package:yaml/yaml.dart';
 // Would need to have a "which human can do this"
 // as well as a "which tool is needed to do this" (e.g. gather, axe, etc.)
 
-// These are effectively classes of tools?
-// enum MinionAction {
-//   gather, // hand
-//   lumberjack, // axe
-//   hunt, // weapon
-//   fish, // fishing rod
-//   explore, // torch
-// }
-
 enum MeTool {
   hand,
   stone,

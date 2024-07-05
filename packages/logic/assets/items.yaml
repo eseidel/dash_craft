@@ -2,7 +2,9 @@ items:
 - name: 'Banana'
   energy: 1
 - name: 'Peeled Banana'
-  energy: 5
+  energy: 3
+- name: 'Sliced Banana'
+  energy: 8
 - name: 'Stone'
 - name: 'Goop'
   energy: -1
@@ -15,3 +17,12 @@ items:
   energy: 3
 - name: 'Raw Coconut'
   energy: 8
+- name: 'Walnut'
+- name: 'Walnut Kernel'
+  energy: 4
+- name: 'Chestnut'
+- name: 'Chestnut Kernel'
+  energy: 3
+- name: 'Peanut'
+- name: 'Peanut Kernel'
+  energy: 3

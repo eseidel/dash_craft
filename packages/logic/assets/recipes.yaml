@@ -12,14 +12,35 @@ recipes:
   tool: "hand"
   skill: "mealPreparing"
 - in:
+    "Walnut": 1
+  out:
+    "Walnut Kernel": 1
+  tool: "stone"
+  skill: "mealPreparing"
+- in:
+    "Peeled Banana": 1
+  out:
+    "Sliced Banana": 1
+  tool: "sharpStone"
+  skill: "mealPreparing"
+- in:
+    "Peanut": 1
+  out:
+    "Peanut Kernel": 1
+  tool: "hand"
+  skill: "mealPreparing"
+  min_skill: 5
+- in:
     "Coconut": 1
   out:
     "Opened Coconut": 2
   tool: "stone"
   skill: "mealPreparing"
+  min_skill: 10
 - in:
     "Opened Coconut": 1
   out:
     "Raw Coconut": 1
   tool: "sharpStone"
   skill: "mealPreparing"
+  min_skill: 15

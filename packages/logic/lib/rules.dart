@@ -33,6 +33,14 @@ class Rules {
     }
   }
 
+  Iterable<MinionTask> tasksWithOutput(Item output) sync* {
+    for (final task in tasks.all) {
+      if (task.item == output) {
+        yield task;
+      }
+    }
+  }
+
   Cookbook get cookbook => Cookbook(recipes);
 }
 
