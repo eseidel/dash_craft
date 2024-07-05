@@ -403,7 +403,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onInventoryTap(ItemStack stack) {
-    if (game.state.craftingInputs.hasRoomFor(stack)) {
+    if (!game.state.craftingInputs.hasRoomFor(stack)) {
       setState(() {
         errorMessage = 'Input tray is full';
       });
@@ -412,9 +412,8 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       // We don't have a Transfer action yet, so implement it ourselves.
       game.state = game.state.copyWith(
-        craftingInputs:
-            game.state.craftingInputs.copyWith(added: stack.toList()),
-        inventory: game.state.inventory.copyWith(removed: stack.toList()),
+        craftingInputs: game.state.craftingInputs.copyWith(added: [stack.item]),
+        inventory: game.state.inventory.copyWith(removed: [stack.item]),
       );
     });
   }
@@ -430,8 +429,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // We don't have a Transfer action yet, so implement it ourselves.
       game.state = game.state.copyWith(
         craftingInputs:
-            game.state.craftingInputs.copyWith(removed: stack.toList()),
-        inventory: game.state.inventory.copyWith(added: stack.toList()),
+            game.state.craftingInputs.copyWith(removed: [stack.item]),
+        inventory: game.state.inventory.copyWith(added: [stack.item]),
       );
     });
   }
@@ -547,7 +546,8 @@ class SkillSheet extends StatelessWidget {
           ),
           ...skillList.map((skill) {
             return Text(
-                '${skill.displayName}: ${skills[skill].toStringAsFixed(1)}');
+              '${skill.displayName}: ${skills[skill].toStringAsFixed(1)}',
+            );
           }),
         ],
       ),
