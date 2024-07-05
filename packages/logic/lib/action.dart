@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:logic/doc.dart';
 import 'package:logic/game.dart';
+import 'package:logic/rules.dart';
 import 'package:meta/meta.dart';
 
 // Actions types

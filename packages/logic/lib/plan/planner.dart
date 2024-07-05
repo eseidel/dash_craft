@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:logic/action.dart';
-import 'package:logic/doc.dart';
 import 'package:logic/game.dart';
+import 'package:logic/rules.dart';
 
 class ActionGenerator {
   ActionGenerator(this.doc);

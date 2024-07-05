@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:logic/doc.dart';
 import 'package:logic/game.dart';
+import 'package:logic/rules.dart';
 import 'package:yaml/yaml.dart';
 
 const inputSize = 3;

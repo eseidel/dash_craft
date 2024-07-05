@@ -1,11 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'package:args/args.dart';
-import 'package:logic/doc.dart';
 import 'package:logic/game.dart';
 import 'package:logic/plan/goal.dart';
 import 'package:logic/plan/mcts.dart';
 import 'package:logic/plan/planner.dart';
+import 'package:logic/rules.dart';
 
 // MVP
 // A thing which can simulate to peel 100 bananas

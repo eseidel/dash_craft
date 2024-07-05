@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:logic/doc.dart';
 import 'package:logic/game.dart';
+import 'package:logic/rules.dart';
 import 'package:meta/meta.dart';
 import 'package:yaml/yaml.dart';
 
