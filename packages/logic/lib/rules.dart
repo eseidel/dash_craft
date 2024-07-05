@@ -2,14 +2,14 @@
 
 import 'dart:io';
 
-import 'package:logic/items.dart';
-import 'package:logic/recipes.dart';
-import 'package:logic/tasks.dart';
+import 'package:logic/src/items.dart';
+import 'package:logic/src/recipes.dart';
+import 'package:logic/src/tasks.dart';
 import 'package:yaml/yaml.dart';
 
-export 'package:logic/items.dart';
-export 'package:logic/recipes.dart';
-export 'package:logic/tasks.dart';
+export 'package:logic/src/items.dart';
+export 'package:logic/src/recipes.dart';
+export 'package:logic/src/tasks.dart';
 
 class Rules {
   const Rules({

@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:logic/items.dart';
+import 'package:logic/src/items.dart';
 import 'package:yaml/yaml.dart';
 
 enum TaskType {

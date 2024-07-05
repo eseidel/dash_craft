@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:logic/action.dart';
-import 'package:logic/items.dart';
 import 'package:logic/logger.dart';
+import 'package:logic/src/action.dart';
+import 'package:logic/src/items.dart';
 import 'package:meta/meta.dart';
 
 enum Skill {

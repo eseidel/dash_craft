@@ -1,6 +1,6 @@
 import 'package:logic/game.dart';
-import 'package:logic/items.dart';
 import 'package:logic/plan/goal.dart';
+import 'package:logic/src/items.dart';
 import 'package:test/test.dart';
 
 void main() {
