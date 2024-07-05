@@ -546,7 +546,8 @@ class SkillSheet extends StatelessWidget {
             ],
           ),
           ...skillList.map((skill) {
-            return Text('${skill.displayName}: ${skills[skill]}');
+            return Text(
+                '${skill.displayName}: ${skills[skill].toStringAsFixed(1)}');
           }),
         ],
       ),
