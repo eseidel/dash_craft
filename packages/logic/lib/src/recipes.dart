@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:logic/game.dart';
 import 'package:logic/rules.dart';
@@ -341,40 +339,38 @@ class CraftingInputs {
   }
 }
 
+// Essentially an item instance.  Item is a type of item.
+@immutable
 class ItemStack {
-  ItemStack({required this.type, this.count = 1});
+  const ItemStack({required this.type, this.count = 1, this.durability});
   final Item type;
-  int count;
+  final int count;
+  final int? durability;
 
-  static const int stackSize = 100;
+  Item get item => type;
 
-  // int get energy => type.energy * count;
-  int get spaceLeft => stackSize - count;
+  static const int maxSize = 100;
 
-  void takeFrom(ItemStack from, {int limit = stackSize}) {
-    if (from.type != type) {
-      throw ArgumentError("Can't add non-matching item type.");
-    }
-    final int maxCouldTake = min(from.count, spaceLeft);
-    final int taking = min(maxCouldTake, limit);
-    count += taking;
-    from.count -= taking;
+  int? get energy {
+    final energy = type.energy;
+    if (energy == null) return null;
+    return energy * count;
+  }
+
+  int get spaceLeft => maxSize - count;
+
+  ItemStack copyWith({int? count, int? durability}) {
+    return ItemStack(
+      type: type,
+      count: count ?? this.count,
+      durability: durability ?? this.durability,
+    );
   }
 
   bool haveSpaceFor(ItemStack from) {
     if (from.type != type) return false;
     return spaceLeft >= from.count;
   }
-
-  // Not sure this is safe.
-  // ItemStack takeOneAsNewStack() {
-  //   assert(
-  //     count > 1,
-  //   );
-  //   count -= 1;
-  //   // Also copy durability!
-  //   return ItemStack(type: type);
-  // }
 }
 
 // class ItemContainer {

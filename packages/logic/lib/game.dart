@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:logic/logger.dart';
 import 'package:logic/rules.dart';
 import 'package:logic/src/action.dart';
-import 'package:logic/src/items.dart';
 import 'package:meta/meta.dart';
 
 enum Skill {
@@ -79,14 +78,49 @@ class Skills {
 }
 
 @immutable
-class ItemContainer {
-  const ItemContainer() : itemToCount = const {};
+class StackContainer {
+  const StackContainer({required this.size}) : stacks = const <ItemStack?>[];
 
-  const ItemContainer.fromCounts(this.itemToCount);
-  final Map<Item, int> itemToCount;
+  @visibleForTesting
+  StackContainer.fromCounts({
+    required Map<Item, int> itemCounts,
+    required this.size,
+  }) : stacks = _stacksFromCounts(itemCounts) {
+    if (stacks.length > size) {
+      throw ArgumentError('Too many stacks: $stacks');
+    }
+  }
+
+  static List<ItemStack> _stacksFromCounts(Map<Item, int> itemCounts) {
+    final stacks = <ItemStack>[];
+    for (final entry in itemCounts.entries) {
+      final item = entry.key;
+      var left = entry.value;
+      const stackSize = ItemStack.maxSize;
+      while (left > 0) {
+        final count = left > stackSize ? stackSize : left;
+        stacks.add(ItemStack(type: item, count: count));
+        left -= count;
+      }
+    }
+    return stacks;
+  }
+
+  final List<ItemStack?> stacks;
+  final int size;
 
   // Hack for now.
   bool hasRoomFor(List<Item> items) => true;
+
+  Map<Item, int> get itemCounts {
+    final itemToCount = <Item, int>{};
+    for (final stack in stacks) {
+      if (stack != null) {
+        itemToCount[stack.item] = (itemToCount[stack.item] ?? 0) + stack.count;
+      }
+    }
+    return Map<Item, int>.unmodifiable(itemToCount);
+  }
 
   static Map<Item, int> toItemCounts(List<Item> items) {
     final itemToCount = <Item, int>{};
@@ -100,7 +134,7 @@ class ItemContainer {
     required List<Item> removed,
     required List<Item> added,
   }) {
-    final newItemCounts = Map<Item, int>.from(itemToCount);
+    final newItemCounts = Map<Item, int>.from(itemCounts);
     if (removed.isNotEmpty) {
       for (final toRemove in removed) {
         assert(newItemCounts[toRemove] != null, 'Item $toRemove not in $this');
@@ -126,15 +160,15 @@ class ItemContainer {
   // This will just be item (types) when Inventory hold stacks?
   Iterable<Item> get uniqueItems {
     assert(
-      itemToCount.entries.every((element) => element.value > 0),
-      'Container has negative counts: $itemToCount',
+      itemCounts.entries.every((element) => element.value > 0),
+      'Container has negative counts: $itemCounts',
     );
-    return itemToCount.keys;
+    return itemCounts.keys;
   }
 
   List<Item> get allItems {
     final items = <Item>[];
-    for (final entry in itemToCount.entries) {
+    for (final entry in itemCounts.entries) {
       for (var i = 0; i < entry.value; i++) {
         items.add(entry.key);
       }
@@ -144,13 +178,12 @@ class ItemContainer {
 }
 
 @immutable
-class Inventory extends ItemContainer {
-  const Inventory() : super();
-  const Inventory.fromCounts(super.itemToCount) : super.fromCounts();
-  Inventory.fromItems(List<Item> items)
-      : super.fromCounts(ItemContainer.toItemCounts(items));
+class Inventory extends StackContainer {
+  const Inventory() : super(size: 25);
+  Inventory.fromCounts(Map<Item, int> itemCounts)
+      : super.fromCounts(itemCounts: itemCounts, size: 25);
 
-  int countOf(Item item) => itemToCount[item] ?? 0;
+  int countOf(Item item) => itemCounts[item] ?? 0;
 
   Inventory copyWith({List<Item>? removed, List<Item>? added}) {
     final newItemCounts = itemCountsAfterEdits(
@@ -162,7 +195,7 @@ class Inventory extends ItemContainer {
 
   @override
   String toString() {
-    return 'Inventory($itemToCount)';
+    return 'Inventory($itemCounts)';
   }
 }
 

@@ -7,7 +7,7 @@ void main() {
   test('possibleCrafts', () {
     final doc = DOC.load();
     final actionGenerator = ActionGenerator(doc);
-    final inventory = Inventory.fromItems([doc.banana]);
+    final inventory = Inventory.fromCounts({doc.banana: 1});
     const skills = Skills({Skill.mealPreparing: 0});
     final actions = actionGenerator.possibleCrafts(inventory, skills);
     expect(actions.length, 1);

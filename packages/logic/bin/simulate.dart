@@ -62,7 +62,7 @@ void main(List<String> args) {
   print('Minion Energy: ${game.state.minionEnergy}');
   print('Stats: ${game.state.stats}');
   print('Skills: ${game.state.skills}');
-  print('Inventory: ${game.state.inventory.itemToCount}');
+  print('Inventory: ${game.state.inventory.itemCounts}');
 }
 
 // class Goal {

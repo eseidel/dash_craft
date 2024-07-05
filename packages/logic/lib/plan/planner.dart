@@ -13,7 +13,7 @@ class ActionGenerator {
     Inventory inventory,
     Skills skills,
   ) sync* {
-    final counts = inventory.itemToCount;
+    final counts = inventory.itemCounts;
     for (final recipe in doc.recipes.all) {
       if (recipe.skillRequired <= skills[recipe.skill] &&
           recipe.inputs.entries.every(

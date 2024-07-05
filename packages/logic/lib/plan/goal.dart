@@ -14,7 +14,7 @@ class Goal {
 
   bool haveMet(GameState state) {
     final inventory = state.inventory;
-    final currentCounts = inventory.itemToCount;
+    final currentCounts = inventory.itemCounts;
     for (final targetCount in itemCounts) {
       final count = currentCounts[targetCount.item] ?? 0;
       if (count < targetCount.count) {
@@ -29,7 +29,7 @@ class Goal {
     // For each goal, figure out what % complete in current state.
     // Return a weighted average of all the goals?
     final inventory = state.inventory;
-    final currentCounts = inventory.itemToCount;
+    final currentCounts = inventory.itemCounts;
     var currentGoalItems = 0;
     var totalTargetItems = 0;
     for (final targetCount in itemCounts) {
@@ -191,7 +191,7 @@ class GoalPlanner extends Planner {
     // If we need tools, plan an action tree to create them.
 
     // Action tree is only invalidated when skill state changes?
-    final itemCounts = state.inventory.itemToCount;
+    final itemCounts = state.inventory.itemCounts;
     for (final node in tree.children) {
       final actionFromRoot = nextAction(node, itemCounts);
       if (actionFromRoot != null) {
