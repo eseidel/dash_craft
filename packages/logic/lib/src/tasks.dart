@@ -33,7 +33,7 @@ class MinionTask {
       type: type,
       item: item,
       energy: yaml['energy'] as int?,
-      minSkill: yaml['minSkill'] as int? ?? 0,
+      minSkill: yaml['min_skill'] as int? ?? 0,
     );
   }
 
