@@ -7,10 +7,10 @@ tasks:
     min_skill: 0
   - item: "Coconut"
     min_skill: 5
-  # - item: "Stone"
-  #   min_skill: 10
-  # - item: "Peanut"
-  #   min_skill: 15
+  - item: "Stone"
+    min_skill: 10
+  - item: "Peanut"
+    min_skill: 15
   # - item: "Blue Berry"
   #   min_skill: 20
   # - item: "Red Berry"

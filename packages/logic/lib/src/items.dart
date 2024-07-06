@@ -25,6 +25,7 @@ class Item {
       tool: yaml['tool'] == null
           ? null
           : ToolType.fromString(yaml['tool'] as String),
+      toolLevel: yaml['tool_level'] as int?,
     );
   }
 

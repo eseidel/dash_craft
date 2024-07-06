@@ -6,6 +6,8 @@ items:
 - name: 'Sliced Banana'
   energy: 8
 - name: 'Stone'
+  tool: stone
+  tool_level: 1
 - name: 'Goop'
   energy: -1
 - name: 'Orange'

@@ -209,7 +209,11 @@ class InputTray extends StatelessWidget {
       color: Colors.deepPurple,
       child: Row(
         children: [0, 1, 2].map((index) {
-          return TappableItemStack(stack: inputs[index], onTap: onTap);
+          return TappableItemStack(
+            stack: inputs[index],
+            onTap: onTap,
+            disabled: disabled,
+          );
         }).toList(),
       ),
     );
@@ -221,7 +225,7 @@ class CraftingBenchWidget extends StatelessWidget {
     required this.bench,
     required this.onCraft,
     required this.onInputTap,
-    required this.onChooseTool,
+    required this.onToolTap,
     this.recipe,
     this.disabled = false,
     super.key,
@@ -231,7 +235,7 @@ class CraftingBenchWidget extends StatelessWidget {
   final Recipe? recipe;
   final void Function(ItemStack) onInputTap;
   final void Function(CraftingBench bench) onCraft;
-  final void Function() onChooseTool;
+  final void Function(ItemStack?) onToolTap;
   final bool disabled;
 
   @override
@@ -240,7 +244,7 @@ class CraftingBenchWidget extends StatelessWidget {
       children: [
         InputTray(inputs: bench.inputs, onTap: onInputTap),
         GestureDetector(
-          onTap: onChooseTool,
+          onTap: () => onToolTap(bench.tool),
           child: const ToolWidget(tool: ToolType.hand),
         ),
         RecipeWidget(recipe: recipe),
@@ -263,10 +267,11 @@ class InventoryGrid extends StatelessWidget {
 
   final Inventory inventory;
   final void Function(ItemStack) onTap;
-  final bool Function(ItemStack)? filter;
+  final bool Function(ItemStack?)? filter;
 
   @override
   Widget build(BuildContext context) {
+    final filter = this.filter;
     return AspectRatio(
       aspectRatio: 1,
       child: GridView.builder(
@@ -275,7 +280,12 @@ class InventoryGrid extends StatelessWidget {
           crossAxisCount: 5,
         ),
         itemBuilder: (BuildContext ctx, index) {
-          return TappableItemStack(stack: inventory[index], onTap: onTap);
+          final stack = inventory[index];
+          return TappableItemStack(
+            stack: stack,
+            onTap: onTap,
+            disabled: filter != null && !filter(stack),
+          );
         },
       ),
     );
@@ -322,7 +332,7 @@ class GameView extends StatelessWidget {
     required this.onShowMinionSkills,
     required this.meEnergy,
     required this.minionEnergy,
-    required this.onChooseTool,
+    required this.onToolTap,
     this.recipe,
     this.errorMessage,
     this.statusMessage,
@@ -337,10 +347,10 @@ class GameView extends StatelessWidget {
   final void Function() onGather;
   final void Function(ItemStack) onInventoryTap;
   final void Function(ItemStack) onInputTap;
+  final void Function(ItemStack?) onToolTap;
   final void Function(CraftingBench bench) onCraft;
   final void Function() onShowMySkills;
   final void Function() onShowMinionSkills;
-  final void Function() onChooseTool;
   final Recipe? recipe;
   final int meEnergy;
   final int minionEnergy;
@@ -381,14 +391,15 @@ class GameView extends StatelessWidget {
               onInputTap: onInputTap,
               recipe: recipe,
               disabled: selectingTool,
-              onChooseTool: onChooseTool,
+              onToolTap: onToolTap,
             ),
           ),
           Expanded(
             child: InventoryGrid(
               inventory: inventory,
               onTap: onInventoryTap,
-              filter: selectingTool ? (stack) => stack.item.tool != null : null,
+              filter:
+                  selectingTool ? (stack) => stack?.item.tool != null : null,
             ),
           ),
         ],
@@ -407,6 +418,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Rules get rules => _rules!;
   DOC get doc => _rules!;
 
+  // Does this need to be a state machine (enum)?
   bool selectingTool = false;
 
   @override
@@ -438,6 +450,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onInventoryTap(ItemStack stack) {
+    if (selectingTool) {
+      // TODO(eseidel): If tool, transfer to the tool slot rather than bench.
+      // Otherwise toggle off tool selection.
+      toggleToolSelection();
+      return;
+    }
+
     if (!game.state.bench.inputs.hasRoomFor(stack)) {
       setState(() {
         errorMessage = 'Input tray is full';
@@ -458,6 +477,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onInputTap(ItemStack stack) {
+    if (selectingTool) {
+      toggleToolSelection();
+      return;
+    }
+
     if (!game.state.inventory.hasRoomFor(stack)) {
       setState(() {
         errorMessage = 'Inventory full';
@@ -515,7 +539,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onChooseTool() {
+  void onToolTap(ItemStack? stack) {
+    // If already have a tool, transfer the tool back to the inventory.
+    // If can't transfer tool to inventory, show error message.
+    toggleToolSelection();
+  }
+
+  void toggleToolSelection() {
+    // If we already have a tool selected, transfer it to inventory if possible.
+
     setState(() {
       if (selectingTool) {
         statusMessage = null;
@@ -573,7 +605,7 @@ class _MyHomePageState extends State<MyHomePage> {
         recipe: knownRecipeFor(bench),
         onShowMySkills: onShowMySkills,
         onShowMinionSkills: onShowMinionSkills,
-        onChooseTool: onChooseTool,
+        onToolTap: onToolTap,
         meEnergy: game.state.meEnergy,
         minionEnergy: game.state.minionEnergy,
         selectingTool: selectingTool,
