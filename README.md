@@ -3,29 +3,18 @@
 # dash_craft
  Just playing around.
 
-# Todo
-* How to plan.  Do we need a fitness function?
-* How to evaluate a given game state vs. another?
+## TODO
 
+* Tools (selecting, checking during crafting)
+* Energy / Eating
+* Containers
+* Drag and Drop
+* More recipes
+* More items
+* Track learned recipes
+* Skill views
+* Improve UI
 
-
-# Old Todo
-* Each location should be an location object rather than an ItemStack.  Drags just connect two locations rather than moving items.
-* Make it possible to save current state.
-* Add icons for items
-* Show recipe being crafted (if known?)
-* Make it possible to not-know recipes?
-* Make it possible to drag a whole stack for crafting?
-
-
-## Bugs
-* Crafting always works, even when missing things.
-* When multi-crafting, can you get multi-goop?
-* How is percent success effected by multi-crafting?
-
-* Missing Features
-* Learning recipes
-* Recipe book
 
 ## Gather skill
 12.0

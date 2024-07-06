@@ -1,13 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:yaml/yaml.dart';
 
-enum MeTool {
+enum ToolType {
   hand,
   stone,
   sharpStone;
 
-  static MeTool fromString(String name) {
-    final tool = MeTool.values.firstWhereOrNull((e) => e.name == name);
+  static ToolType fromString(String name) {
+    final tool = ToolType.values.firstWhereOrNull((e) => e.name == name);
     if (tool == null) {
       throw ArgumentError('Unknown tool: $name');
     }
@@ -24,13 +24,13 @@ class Item {
       energy: yaml['energy'] as int?,
       tool: yaml['tool'] == null
           ? null
-          : MeTool.fromString(yaml['tool'] as String),
+          : ToolType.fromString(yaml['tool'] as String),
     );
   }
 
   final String name;
   final int? energy;
-  final MeTool? tool;
+  final ToolType? tool;
   final int? toolLevel;
 
   @override

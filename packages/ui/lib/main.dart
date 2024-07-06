@@ -39,15 +39,20 @@ class TappableItemStack extends StatelessWidget {
     required this.stack,
     required this.onTap,
     super.key,
+    this.disabled = false,
   });
 
   final ItemStack? stack;
   final void Function(ItemStack) onTap;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
     if (stack == null) {
       return ItemStackWidget(stack: stack);
+    }
+    if (disabled) {
+      return Opacity(opacity: 0.5, child: ItemStackWidget(stack: stack));
     }
     return GestureDetector(
       child: ItemStackWidget(stack: stack),
@@ -65,7 +70,7 @@ extension on Item {
   String get assetKey => _assetKey(name.replaceAll(' ', ''));
 }
 
-extension on MeTool {
+extension on ToolType {
   String get assetKey => _assetKey(name.replaceAll(' ', ''));
 }
 
@@ -131,7 +136,7 @@ class ToolWidget extends StatelessWidget {
     this.height = 100,
   });
 
-  final MeTool tool;
+  final ToolType tool;
   final double width;
   final double height;
 
@@ -186,10 +191,16 @@ class RecipeWidget extends StatelessWidget {
 }
 
 class InputTray extends StatelessWidget {
-  const InputTray({required this.inputs, required this.onTap, super.key});
+  const InputTray({
+    required this.inputs,
+    required this.onTap,
+    super.key,
+    this.disabled = false,
+  });
 
   final InputsContainer inputs;
   final void Function(ItemStack) onTap;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +221,9 @@ class CraftingBenchWidget extends StatelessWidget {
     required this.bench,
     required this.onCraft,
     required this.onInputTap,
+    required this.onChooseTool,
     this.recipe,
+    this.disabled = false,
     super.key,
   });
 
@@ -218,16 +231,21 @@ class CraftingBenchWidget extends StatelessWidget {
   final Recipe? recipe;
   final void Function(ItemStack) onInputTap;
   final void Function(CraftingBench bench) onCraft;
+  final void Function() onChooseTool;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         InputTray(inputs: bench.inputs, onTap: onInputTap),
-        const ToolWidget(tool: MeTool.hand),
+        GestureDetector(
+          onTap: onChooseTool,
+          child: const ToolWidget(tool: ToolType.hand),
+        ),
         RecipeWidget(recipe: recipe),
         ElevatedButton(
-          onPressed: () => onCraft(bench),
+          onPressed: disabled ? null : () => onCraft(bench),
           child: const Text('Craft'),
         ),
       ],
@@ -239,11 +257,13 @@ class InventoryGrid extends StatelessWidget {
   const InventoryGrid({
     required this.inventory,
     required this.onTap,
+    this.filter,
     super.key,
   });
 
   final Inventory inventory;
   final void Function(ItemStack) onTap;
+  final bool Function(ItemStack)? filter;
 
   @override
   Widget build(BuildContext context) {
@@ -262,8 +282,8 @@ class InventoryGrid extends StatelessWidget {
   }
 }
 
-class ErrorMessage extends StatelessWidget {
-  const ErrorMessage({required this.message, super.key});
+class StatusMessage extends StatelessWidget {
+  const StatusMessage({required this.message, super.key});
 
   final String? message;
 
@@ -276,35 +296,55 @@ class ErrorMessage extends StatelessWidget {
   }
 }
 
+class ErrorMessage extends StatelessWidget {
+  const ErrorMessage({required this.message, super.key});
+
+  final String? message;
+
+  @override
+  Widget build(BuildContext context) {
+    if (message == null) {
+      return const SizedBox();
+    }
+    return Text(message!, style: const TextStyle(color: Colors.red));
+  }
+}
+
 class GameView extends StatelessWidget {
   const GameView({
     required this.bench,
     required this.inventory,
-    required this.errorMessage,
     required this.onGather,
     required this.onInventoryTap,
     required this.onInputTap,
     required this.onCraft,
-    required this.recipe,
     required this.onShowMySkills,
     required this.onShowMinionSkills,
     required this.meEnergy,
     required this.minionEnergy,
+    required this.onChooseTool,
+    this.recipe,
+    this.errorMessage,
+    this.statusMessage,
+    this.selectingTool = false,
     super.key,
   });
 
   final CraftingBench bench;
   final Inventory inventory;
   final String? errorMessage;
+  final String? statusMessage;
   final void Function() onGather;
   final void Function(ItemStack) onInventoryTap;
   final void Function(ItemStack) onInputTap;
   final void Function(CraftingBench bench) onCraft;
   final void Function() onShowMySkills;
   final void Function() onShowMinionSkills;
+  final void Function() onChooseTool;
   final Recipe? recipe;
   final int meEnergy;
   final int minionEnergy;
+  final bool selectingTool;
 
   @override
   Widget build(BuildContext context) {
@@ -332,6 +372,7 @@ class GameView extends StatelessWidget {
             ],
           ),
           ElevatedButton(onPressed: onGather, child: const Text('Gather')),
+          StatusMessage(message: statusMessage),
           ErrorMessage(message: errorMessage),
           Expanded(
             child: CraftingBenchWidget(
@@ -339,12 +380,15 @@ class GameView extends StatelessWidget {
               onCraft: onCraft,
               onInputTap: onInputTap,
               recipe: recipe,
+              disabled: selectingTool,
+              onChooseTool: onChooseTool,
             ),
           ),
           Expanded(
             child: InventoryGrid(
               inventory: inventory,
               onTap: onInventoryTap,
+              filter: selectingTool ? (stack) => stack.item.tool != null : null,
             ),
           ),
         ],
@@ -356,11 +400,14 @@ class GameView extends StatelessWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late final DOC? _rules;
   String? errorMessage;
+  String? statusMessage;
   Game game = Game();
 
   bool isLoaded() => _rules != null;
   Rules get rules => _rules!;
   DOC get doc => _rules!;
+
+  bool selectingTool = false;
 
   @override
   void initState() {
@@ -468,6 +515,17 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void onChooseTool() {
+    setState(() {
+      if (selectingTool) {
+        statusMessage = null;
+      } else {
+        statusMessage = 'Select a tool';
+      }
+      selectingTool = !selectingTool;
+    });
+  }
+
   void onShowMySkills() {
     showModalBottomSheet<void>(
       context: context,
@@ -507,6 +565,7 @@ class _MyHomePageState extends State<MyHomePage> {
         bench: bench,
         inventory: game.state.inventory,
         errorMessage: errorMessage,
+        statusMessage: statusMessage,
         onGather: onGather,
         onInventoryTap: onInventoryTap,
         onInputTap: onInputTap,
@@ -514,8 +573,10 @@ class _MyHomePageState extends State<MyHomePage> {
         recipe: knownRecipeFor(bench),
         onShowMySkills: onShowMySkills,
         onShowMinionSkills: onShowMinionSkills,
+        onChooseTool: onChooseTool,
         meEnergy: game.state.meEnergy,
         minionEnergy: game.state.minionEnergy,
+        selectingTool: selectingTool,
       ),
     );
   }

@@ -46,7 +46,7 @@ class Recipe {
       name: map['name'] as String? ?? outputs.keys.first.name,
       inputs: inputs,
       outputs: outputs,
-      tool: MeTool.fromString(map['tool'] as String),
+      tool: ToolType.fromString(map['tool'] as String),
       skill: Skill.fromString(map['skill'] as String),
       skillRequired: map['min_skill'] as int? ?? 0,
       failureOutputs: ((map['fail'] as List?) ?? [])
@@ -58,7 +58,7 @@ class Recipe {
 
   final String name;
   final Map<Item, int> inputs;
-  final MeTool tool;
+  final ToolType tool;
   // Skill required
   final Skill skill;
   final int skillRequired;
@@ -112,108 +112,108 @@ class RecipeSet {
 //     outputs: {peeledBanana: 1},
 //     inputs: {banana: 1},
 //     skillRequired: 0,
-//     tool: MeTool.hand,
+//     tool: ToolType.hand,
 //   ),
 //   Recipe.food(
 //     outputs: {peeledOrange: 1},
 //     inputs: {orange: 1},
 //     skillRequired: 0,
-//     tool: MeTool.hand,
+//     tool: ToolType.hand,
 //   ),
 //   Recipe.food(
 //     outputs: {walnutKernel: 1},
 //     inputs: {walnut: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 0,
 //   ),
 //   Recipe.food(
 //     outputs: {slicedBanana: 1},
 //     inputs: {peeledBanana: 1},
-//     tool: MeTool.sharpStone,
+//     tool: ToolType.sharpStone,
 //     skillRequired: 0,
 //   ),
 //   Recipe.food(
 //     outputs: {peanutKernel: 1},
 //     inputs: {peanut: 1},
-//     tool: MeTool.hand,
+//     tool: ToolType.hand,
 //     skillRequired: 5,
 //   ),
 //   Recipe.food(
 //     outputs: {openedCoconut: 2},
 //     inputs: {coconut: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 10,
 //   ),
 //   Recipe.food(
 //     outputs: {rawCoconut: 1},
 //     inputs: {openedCoconut: 1},
-//     tool: MeTool.sharpStone,
+//     tool: ToolType.sharpStone,
 //     skillRequired: 15,
 //   ),
 //   Recipe.food(
 //     outputs: {mixedBerries: 1},
 //     inputs: {redberry: 1, blueberry: 1},
-//     tool: MeTool.hand,
+//     tool: ToolType.hand,
 //     skillRequired: 15,
 //   ),
 //   Recipe.food(
 //     outputs: {chestnutKernel: 1},
 //     inputs: {chestnut: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 15,
 //   ),
 //   Recipe.food(
 //     outputs: {blueBerryMash: 1},
 //     inputs: {blueberry: 2, coconutShell: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 15,
 //   ),
 //   Recipe.food(
 //     outputs: {redBerryMash: 1},
 //     inputs: {redberry: 2, coconutShell: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 15,
 //   ),
 //   Recipe.food(
 //     outputs: {mixedBerryMash: 1},
 //     inputs: {mixedBerries: 2, coconutShell: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 20,
 //   ),
 //   Recipe.food(
 //     outputs: {bananaMash: 1},
 //     inputs: {banana: 2, coconutShell: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 25,
 //   ),
 //   Recipe.food(
 //     outputs: {slicedOrange: 1},
 //     inputs: {orange: 1},
-//     tool: MeTool.sharpStone,
+//     tool: ToolType.sharpStone,
 //     skillRequired: 25,
 //   ),
 //   Recipe.food(
 //     outputs: {slicedTomato: 1},
 //     inputs: {tomato: 1},
-//     tool: MeTool.sharpStone,
+//     tool: ToolType.sharpStone,
 //     skillRequired: 30,
 //   ),
 //   Recipe.food(
 //     outputs: {slicedCarrot: 1},
 //     inputs: {carrot: 1},
-//     tool: MeTool.sharpStone,
+//     tool: ToolType.sharpStone,
 //     skillRequired: 30,
 //   ),
 //   Recipe.food(
 //     outputs: {cutLettuce: 1},
 //     inputs: {lettuce: 1},
-//     tool: MeTool.sharpStone,
+//     tool: ToolType.sharpStone,
 //     skillRequired: 30,
 //   ),
 //   Recipe.tool(
 //     outputs: {sharpStone: 1},
 //     inputs: {stone: 1},
-//     tool: MeTool.stone,
+//     tool: ToolType.stone,
 //     skillRequired: 0,
 //   ),
 // ];
@@ -333,9 +333,9 @@ class CraftingBench {
   final InputsContainer inputs;
   final ItemStack? tool;
 
-  MeTool get toolType {
-    if (tool == null) return MeTool.hand;
-    return tool!.type as MeTool;
+  ToolType get toolType {
+    if (tool == null) return ToolType.hand;
+    return tool!.type as ToolType;
   }
 
   ItemStack? get first => inputs[0];
