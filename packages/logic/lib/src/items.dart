@@ -1,17 +1,37 @@
+import 'package:collection/collection.dart';
 import 'package:yaml/yaml.dart';
 
+enum MeTool {
+  hand,
+  stone,
+  sharpStone;
+
+  static MeTool fromString(String name) {
+    final tool = MeTool.values.firstWhereOrNull((e) => e.name == name);
+    if (tool == null) {
+      throw ArgumentError('Unknown tool: $name');
+    }
+    return tool;
+  }
+}
+
 class Item {
-  const Item({required this.name, this.energy});
+  const Item({required this.name, this.energy, this.tool, this.toolLevel});
 
   factory Item.fromYaml(YamlMap yaml) {
     return Item(
       name: yaml['name'] as String,
       energy: yaml['energy'] as int?,
+      tool: yaml['tool'] == null
+          ? null
+          : MeTool.fromString(yaml['tool'] as String),
     );
   }
 
   final String name;
   final int? energy;
+  final MeTool? tool;
+  final int? toolLevel;
 
   @override
   String toString() => name;

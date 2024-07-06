@@ -8,20 +8,6 @@ import 'package:yaml/yaml.dart';
 // Would need to have a "which human can do this"
 // as well as a "which tool is needed to do this" (e.g. gather, axe, etc.)
 
-enum MeTool {
-  hand,
-  stone,
-  sharpStone;
-
-  static MeTool fromString(String name) {
-    final tool = MeTool.values.firstWhereOrNull((e) => e.name == name);
-    if (tool == null) {
-      throw ArgumentError('Unknown tool: $name');
-    }
-    return tool;
-  }
-}
-
 class ItemCount {
   ItemCount(this.item, this.count);
   final Item item;
@@ -264,8 +250,8 @@ class RecipeSet {
 // Raw Kebab	Peeled Stick	Sliced Tomato	Red Meat	Hand	60		27
 
 @immutable
-class RecipeLookup {
-  const RecipeLookup(this.recipe, this.count);
+class RecipeMatch {
+  const RecipeMatch(this.recipe, this.count);
   final Recipe recipe;
   final int count;
 }
@@ -276,58 +262,92 @@ class Cookbook {
 
   final RecipeSet recipes;
 
-  int inputsMatchMultipler(CraftingInputs inputs, Recipe recipe) {
+  RecipeMatch? matchesRecipe(CraftingBench bench, Recipe recipe) {
+    if (bench.toolType != recipe.tool) return null;
+    // TODO(eseidel): Also check tool durability?
+
+    final inputs = bench.inputs;
     final inputTypes = inputs.uniqueItems.toList()..sort();
     final recipeTypes = recipe.uniqueItems.toList()..sort();
     if (!const IterableEquality<Item>().equals(inputTypes, recipeTypes)) {
-      return 0;
+      return null;
     }
     var multiplier = 0;
     for (var i = 0; i < recipeTypes.length; i++) {
       final inputCount = inputs.countOf(recipeTypes[i]);
       final recipeCount = recipe.inputCount(recipeTypes.first);
       final remainder = inputCount % recipeCount;
-      if (remainder != 0) return 0;
+      if (remainder != 0) return null;
       final newMultipler = inputCount ~/ recipeCount;
       if (multiplier == 0) {
         multiplier = newMultipler;
       } else if (multiplier != newMultipler) {
-        return 0;
+        return null;
       }
     }
-    return multiplier;
+    return RecipeMatch(recipe, multiplier);
   }
 
-  RecipeLookup? findRecipe(CraftingInputs inputs) {
+  RecipeMatch? findRecipe(CraftingBench bench) {
     // Some recipes use stacks.
     for (final recipe in recipes.all) {
-      final multipler = inputsMatchMultipler(inputs, recipe);
-      if (multipler > 0) {
-        return RecipeLookup(recipe, multipler);
+      final match = matchesRecipe(bench, recipe);
+      if (match != null) {
+        return match;
       }
     }
     return null;
   }
 }
 
+// Where do we store the tool?  The tool needs a durability, so it's an
+// ItemStack (of size 1?).  But it's not in the same container as the rest
+// of the inputs.
+
 @immutable
-class CraftingInputs extends StackContainer {
-  CraftingInputs({required super.stacks}) : super(size: 3);
-  const CraftingInputs.empty() : super.empty(size: 3);
+class InputsContainer extends StackContainer {
+  InputsContainer({required super.stacks}) : super(size: 3);
+  const InputsContainer.empty() : super.empty(size: 3);
 
   // TODO(eseidel): Preserve stack order.
-  CraftingInputs copyWith({List<Item>? removed, List<Item>? added}) {
+  InputsContainer copyWith({List<Item>? removed, List<Item>? added}) {
     final counts = itemCountsAfterEdits(
       removed: removed ?? [],
       added: added ?? [],
     );
     final stacks = StackContainer.stacksFromCounts(counts);
-    return CraftingInputs(stacks: stacks);
+    return InputsContainer(stacks: stacks);
+  }
+}
+
+@immutable
+class CraftingBench {
+  const CraftingBench({required this.inputs, this.tool});
+  @visibleForTesting
+  CraftingBench.fromStacks(List<ItemStack> stacks, {this.tool})
+      : inputs = InputsContainer(stacks: stacks);
+  const CraftingBench.empty()
+      : inputs = const InputsContainer.empty(),
+        tool = null;
+
+  final InputsContainer inputs;
+  final ItemStack? tool;
+
+  MeTool get toolType {
+    if (tool == null) return MeTool.hand;
+    return tool!.type as MeTool;
   }
 
-  ItemStack? get first => this[0];
-  ItemStack? get second => this[1];
-  ItemStack? get third => this[2];
+  ItemStack? get first => inputs[0];
+  ItemStack? get second => inputs[1];
+  ItemStack? get third => inputs[2];
+
+  CraftingBench copyWith({InputsContainer? inputs, ItemStack? tool}) {
+    return CraftingBench(
+      inputs: inputs ?? this.inputs,
+      tool: tool ?? this.tool,
+    );
+  }
 }
 
 // Essentially an item instance.  Item is a type of item.

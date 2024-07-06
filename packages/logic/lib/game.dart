@@ -251,12 +251,12 @@ class GameState {
     required this.meEnergy,
     required this.minionEnergy,
     required this.stats,
-    required this.craftingInputs,
+    required this.bench,
   });
 
   const GameState.empty()
       : inventory = const Inventory.empty(),
-        craftingInputs = const CraftingInputs.empty(),
+        bench = const CraftingBench.empty(),
         skills = const Skills(),
         stats = const GameStats(),
         meEnergy = meMaxEnergy,
@@ -264,7 +264,7 @@ class GameState {
   static const meMaxEnergy = 100;
   static const minionMaxEnergy = 100;
 
-  final CraftingInputs craftingInputs;
+  final CraftingBench bench;
   final Inventory inventory;
   final Skills skills;
   final int meEnergy;
@@ -280,7 +280,7 @@ class GameState {
     int? meEnergy,
     int? minionEnergy,
     GameStats? stats,
-    CraftingInputs? craftingInputs,
+    CraftingBench? bench,
   }) {
     return GameState(
       inventory: inventory ?? this.inventory,
@@ -288,7 +288,7 @@ class GameState {
       meEnergy: meEnergy ?? this.meEnergy,
       minionEnergy: minionEnergy ?? this.minionEnergy,
       stats: stats ?? this.stats,
-      craftingInputs: craftingInputs ?? this.craftingInputs,
+      bench: bench ?? this.bench,
     );
   }
 

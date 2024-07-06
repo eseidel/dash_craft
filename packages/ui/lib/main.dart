@@ -188,7 +188,7 @@ class RecipeWidget extends StatelessWidget {
 class InputTray extends StatelessWidget {
   const InputTray({required this.inputs, required this.onTap, super.key});
 
-  final CraftingInputs inputs;
+  final InputsContainer inputs;
   final void Function(ItemStack) onTap;
 
   @override
@@ -205,29 +205,29 @@ class InputTray extends StatelessWidget {
   }
 }
 
-class CraftingBench extends StatelessWidget {
-  const CraftingBench({
-    required this.inputs,
+class CraftingBenchWidget extends StatelessWidget {
+  const CraftingBenchWidget({
+    required this.bench,
     required this.onCraft,
     required this.onInputTap,
     this.recipe,
     super.key,
   });
 
-  final CraftingInputs inputs;
+  final CraftingBench bench;
   final Recipe? recipe;
   final void Function(ItemStack) onInputTap;
-  final void Function(CraftingInputs inputs) onCraft;
+  final void Function(CraftingBench bench) onCraft;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        InputTray(inputs: inputs, onTap: onInputTap),
+        InputTray(inputs: bench.inputs, onTap: onInputTap),
         const ToolWidget(tool: MeTool.hand),
         RecipeWidget(recipe: recipe),
         ElevatedButton(
-          onPressed: () => onCraft(inputs),
+          onPressed: () => onCraft(bench),
           child: const Text('Craft'),
         ),
       ],
@@ -278,7 +278,7 @@ class ErrorMessage extends StatelessWidget {
 
 class GameView extends StatelessWidget {
   const GameView({
-    required this.inputs,
+    required this.bench,
     required this.inventory,
     required this.errorMessage,
     required this.onGather,
@@ -293,13 +293,13 @@ class GameView extends StatelessWidget {
     super.key,
   });
 
-  final CraftingInputs inputs;
+  final CraftingBench bench;
   final Inventory inventory;
   final String? errorMessage;
   final void Function() onGather;
   final void Function(ItemStack) onInventoryTap;
   final void Function(ItemStack) onInputTap;
-  final void Function(CraftingInputs inputs) onCraft;
+  final void Function(CraftingBench bench) onCraft;
   final void Function() onShowMySkills;
   final void Function() onShowMinionSkills;
   final Recipe? recipe;
@@ -334,8 +334,8 @@ class GameView extends StatelessWidget {
           ElevatedButton(onPressed: onGather, child: const Text('Gather')),
           ErrorMessage(message: errorMessage),
           Expanded(
-            child: CraftingBench(
-              inputs: inputs,
+            child: CraftingBenchWidget(
+              bench: bench,
               onCraft: onCraft,
               onInputTap: onInputTap,
               recipe: recipe,
@@ -383,8 +383,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Recipe? _recipeFor(CraftingInputs inputs) {
-    final result = doc.cookbook.findRecipe(inputs);
+  Recipe? _recipeFor(CraftingBench bench) {
+    final result = doc.cookbook.findRecipe(bench);
     if (result == null) {
       return null;
     }
@@ -403,7 +403,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onInventoryTap(ItemStack stack) {
-    if (!game.state.craftingInputs.hasRoomFor(stack)) {
+    if (!game.state.bench.inputs.hasRoomFor(stack)) {
       setState(() {
         errorMessage = 'Input tray is full';
       });
@@ -411,9 +411,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     setState(() {
       // We don't have a Transfer action yet, so implement it ourselves.
-      game.state = game.state.copyWith(
-        craftingInputs: game.state.craftingInputs.copyWith(added: [stack.item]),
-        inventory: game.state.inventory.copyWith(removed: [stack.item]),
+      final state = game.state;
+      final bench = state.bench;
+      game.state = state.copyWith(
+        bench: bench.copyWith(
+          inputs: bench.inputs.copyWith(added: [stack.item]),
+        ),
+        inventory: state.inventory.copyWith(removed: [stack.item]),
       );
     });
   }
@@ -427,18 +431,21 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     setState(() {
       // We don't have a Transfer action yet, so implement it ourselves.
-      game.state = game.state.copyWith(
-        craftingInputs:
-            game.state.craftingInputs.copyWith(removed: [stack.item]),
-        inventory: game.state.inventory.copyWith(added: [stack.item]),
+      final state = game.state;
+      final bench = state.bench;
+      game.state = state.copyWith(
+        bench: bench.copyWith(
+          inputs: bench.inputs.copyWith(removed: [stack.item]),
+        ),
+        inventory: state.inventory.copyWith(added: [stack.item]),
       );
     });
   }
 
-  void onCraft(CraftingInputs inputs) {
+  void onCraft(CraftingBench bench) {
     // TODO(eseidel): Craft based on rules + current state.
     // Should use Game.apply.
-    final recipe = _recipeFor(inputs);
+    final recipe = _recipeFor(bench);
     if (recipe == null) {
       setState(() {
         errorMessage = 'No recipe found';
@@ -462,7 +469,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       game.state = game.state.copyWith(
-        craftingInputs: const CraftingInputs.empty(),
+        bench: const CraftingBench.empty(),
         inventory: game.state.inventory.copyWith(added: toAdd),
       );
     });
@@ -496,17 +503,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final inputs = game.state.craftingInputs;
+    final bench = game.state.bench;
     return Scaffold(
       body: GameView(
-        inputs: game.state.craftingInputs,
+        bench: bench,
         inventory: game.state.inventory,
         errorMessage: errorMessage,
         onGather: onGather,
         onInventoryTap: onInventoryTap,
         onInputTap: onInputTap,
         onCraft: onCraft,
-        recipe: _recipeFor(inputs),
+        recipe: _recipeFor(bench),
         onShowMySkills: onShowMySkills,
         onShowMinionSkills: onShowMinionSkills,
         meEnergy: game.state.meEnergy,
