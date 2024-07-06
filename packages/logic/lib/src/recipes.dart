@@ -320,29 +320,53 @@ class InputsContainer extends StackContainer {
   }
 }
 
-@immutable
-class CraftingBench {
-  const CraftingBench({required this.inputs, this.tool});
-  @visibleForTesting
-  CraftingBench.fromStacks(List<ItemStack> stacks, {this.tool})
-      : inputs = InputsContainer(stacks: stacks);
-  const CraftingBench.empty()
-      : inputs = const InputsContainer.empty(),
-        tool = null;
-
-  final InputsContainer inputs;
-  final ItemStack? tool;
+class ToolContainer extends StackContainer {
+  ToolContainer({required ItemStack tool}) : super(size: 1, stacks: [tool]);
+  const ToolContainer.empty() : super.empty(size: 1);
 
   ToolType get toolType {
-    if (tool == null) return ToolType.hand;
-    return tool!.type as ToolType;
+    final stack = this.stack;
+    if (stack == null) return ToolType.hand;
+    return stack.type.tool!;
   }
+
+  ItemStack? get stack => this[0];
+
+  ToolContainer copyWith({Item? removed, Item? added}) {
+    final counts = itemCountsAfterEdits(
+      removed: removed == null ? [] : [removed],
+      added: added == null ? [] : [added],
+    );
+    final stacks = StackContainer.stacksFromCounts(counts);
+    return ToolContainer(tool: stacks.first);
+  }
+}
+
+@immutable
+class CraftingBench {
+  const CraftingBench({
+    required this.inputs,
+    this.tool = const ToolContainer.empty(),
+  });
+  @visibleForTesting
+  CraftingBench.fromStacks(
+    List<ItemStack> stacks, {
+    this.tool = const ToolContainer.empty(),
+  }) : inputs = InputsContainer(stacks: stacks);
+  const CraftingBench.empty()
+      : inputs = const InputsContainer.empty(),
+        tool = const ToolContainer.empty();
+
+  final InputsContainer inputs;
+  final ToolContainer tool;
+
+  ToolType get toolType => tool.toolType;
 
   ItemStack? get first => inputs[0];
   ItemStack? get second => inputs[1];
   ItemStack? get third => inputs[2];
 
-  CraftingBench copyWith({InputsContainer? inputs, ItemStack? tool}) {
+  CraftingBench copyWith({InputsContainer? inputs, ToolContainer? tool}) {
     return CraftingBench(
       inputs: inputs ?? this.inputs,
       tool: tool ?? this.tool,
@@ -353,7 +377,8 @@ class CraftingBench {
 // Essentially an item instance.  Item is a type of item.
 @immutable
 class ItemStack {
-  const ItemStack({required this.type, this.count = 1, this.durability});
+  const ItemStack({required this.type, this.count = 1, this.durability})
+      : assert(count > 0, 'count must be positive');
   final Item type;
   final int count;
   final int? durability;

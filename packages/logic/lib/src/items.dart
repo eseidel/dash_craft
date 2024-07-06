@@ -34,6 +34,8 @@ class Item {
   final ToolType? tool;
   final int? toolLevel;
 
+  bool isTool() => tool != null;
+
   @override
   String toString() => name;
 }

@@ -136,21 +136,22 @@ class ToolWidget extends StatelessWidget {
     this.height = 100,
   });
 
-  final ToolType tool;
+  final ToolContainer tool;
   final double width;
   final double height;
 
   @override
   Widget build(BuildContext context) {
+    final toolType = tool.toolType;
     return Image.asset(
-      tool.assetKey,
+      toolType.assetKey,
       width: width,
       height: height,
       errorBuilder: (context, error, stackTrace) {
         return SizedBox(
           width: width,
           height: height,
-          child: Text(tool.name),
+          child: Text(toolType.name),
         );
       },
     );
@@ -235,7 +236,7 @@ class CraftingBenchWidget extends StatelessWidget {
   final Recipe? recipe;
   final void Function(ItemStack) onInputTap;
   final void Function(CraftingBench bench) onCraft;
-  final void Function(ItemStack?) onToolTap;
+  final void Function(ToolContainer) onToolTap;
   final bool disabled;
 
   @override
@@ -245,7 +246,7 @@ class CraftingBenchWidget extends StatelessWidget {
         InputTray(inputs: bench.inputs, onTap: onInputTap),
         GestureDetector(
           onTap: () => onToolTap(bench.tool),
-          child: const ToolWidget(tool: ToolType.hand),
+          child: ToolWidget(tool: bench.tool),
         ),
         RecipeWidget(recipe: recipe),
         ElevatedButton(
@@ -347,7 +348,7 @@ class GameView extends StatelessWidget {
   final void Function() onGather;
   final void Function(ItemStack) onInventoryTap;
   final void Function(ItemStack) onInputTap;
-  final void Function(ItemStack?) onToolTap;
+  final void Function(ToolContainer) onToolTap;
   final void Function(CraftingBench bench) onCraft;
   final void Function() onShowMySkills;
   final void Function() onShowMinionSkills;
@@ -409,7 +410,7 @@ class GameView extends StatelessWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late final DOC? _rules;
+  DOC? _rules;
   String? errorMessage;
   String? statusMessage;
   Game game = Game();
@@ -451,8 +452,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onInventoryTap(ItemStack stack) {
     if (selectingTool) {
-      // TODO(eseidel): If tool, transfer to the tool slot rather than bench.
+      // If tool, transfer to the tool slot rather than bench.
+      if (stack.item.tool != null) {
+        assert(game.state.bench.tool.isEmpty, 'Tool slot should be empty');
+        setState(() {
+          game.state = game.state.copyWith(
+            bench: game.state.bench.copyWith(
+              tool: ToolContainer(tool: ItemStack(type: stack.item)),
+            ),
+            inventory: game.state.inventory.copyWith(removed: [stack.item]),
+          );
+        });
+        toggleToolSelection();
+        return;
+      }
       // Otherwise toggle off tool selection.
+
       toggleToolSelection();
       return;
     }
@@ -478,6 +493,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onInputTap(ItemStack stack) {
     if (selectingTool) {
+      // Always cancel tool selection when tapping an input slot.
       toggleToolSelection();
       return;
     }
@@ -539,9 +555,30 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onToolTap(ItemStack? stack) {
+  void onToolTap(ToolContainer tool) {
+    final stack = tool.stack;
     // If already have a tool, transfer the tool back to the inventory.
-    // If can't transfer tool to inventory, show error message.
+    if (stack != null) {
+      // If can't transfer tool to inventory, show error message.
+      if (!game.state.inventory.hasRoomFor(stack)) {
+        setState(() {
+          errorMessage = 'Inventory full';
+        });
+        return;
+      }
+
+      setState(() {
+        // We don't have a Transfer action yet, so implement it ourselves.
+        final state = game.state;
+        final bench = state.bench;
+        game.state = state.copyWith(
+          bench: bench.copyWith(tool: const ToolContainer.empty()),
+          inventory: state.inventory.copyWith(added: [stack.item]),
+        );
+      });
+      return;
+    }
+
     toggleToolSelection();
   }
 
@@ -591,6 +628,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!isLoaded()) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     final bench = game.state.bench;
     return Scaffold(
       body: GameView(

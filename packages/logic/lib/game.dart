@@ -117,6 +117,8 @@ class StackContainer {
   final List<ItemStack> _stacks;
   final int size;
 
+  bool get isEmpty => _stacks.isEmpty;
+
   ItemStack? operator [](int index) {
     if (index >= _stacks.length) {
       return null;

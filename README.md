@@ -5,14 +5,16 @@
 
 ## TODO
 
-* Tools (selecting, checking during crafting)
+* Tools (transfering in/out of bench)
 * Energy / Eating
-* Containers
 * Drag and Drop
+* Containers
 * More recipes
 * More items
+* More minion tasks
 * Track learned recipes
 * Skill views
+* Recipe book
 * Improve UI
 
 
