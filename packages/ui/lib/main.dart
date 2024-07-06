@@ -383,18 +383,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Recipe? _recipeFor(CraftingBench bench) {
-    final result = doc.cookbook.findRecipe(bench);
-    if (result == null) {
-      return null;
-    }
-    // We don't yet support multiples.
-    if (result.count > 1) {
-      return null;
-    }
-    return result.recipe;
-  }
-
   void onGather() {
     final action = SendMinion(doc: doc);
     setState(() {
@@ -443,19 +431,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onCraft(CraftingBench bench) {
-    // TODO(eseidel): Craft based on rules + current state.
-    // Should use Game.apply.
-    final recipe = _recipeFor(bench);
-    if (recipe == null) {
+    // TODO(eseidel): Use Craft action + validate?
+
+    final result = doc.cookbook.findRecipe(bench);
+    if (result == null) {
       setState(() {
         errorMessage = 'No recipe found';
       });
       return;
     }
+    // TODO(eseidel): Use stacks instead of items?
+    // This does not respect percentage based outputs.
     final toAdd = <Item>[];
-    for (final entry in recipe.outputs.entries) {
-      for (var i = 0; i < entry.value; i++) {
-        toAdd.add(entry.key);
+    for (var count = 0; count < result.count; count++) {
+      for (final entry in result.recipe.outputs.entries) {
+        for (var i = 0; i < entry.value; i++) {
+          toAdd.add(entry.key);
+        }
       }
     }
     // This should only fail if the 100% chance outputs don't fit.
@@ -467,6 +459,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //   return;
     // }
 
+    // Should use Game.apply.
     setState(() {
       game.state = game.state.copyWith(
         bench: const CraftingBench.empty(),
@@ -501,6 +494,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Recipe? knownRecipeFor(CraftingBench bench) {
+    // TODO(eseidel): respect if we've learned recipes or not.
+    return doc.cookbook.findRecipe(bench)?.recipe;
+  }
+
   @override
   Widget build(BuildContext context) {
     final bench = game.state.bench;
@@ -513,7 +511,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onInventoryTap: onInventoryTap,
         onInputTap: onInputTap,
         onCraft: onCraft,
-        recipe: _recipeFor(bench),
+        recipe: knownRecipeFor(bench),
         onShowMySkills: onShowMySkills,
         onShowMinionSkills: onShowMinionSkills,
         meEnergy: game.state.meEnergy,
