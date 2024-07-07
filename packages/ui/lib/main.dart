@@ -458,7 +458,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<Game> loadGame(Rules rules) async {
-    final savePath = await getSavePath();
+    savePath = await getSavePath();
     final file = File(savePath);
     if (!file.existsSync()) {
       print('No save file found at $savePath, starting new game.');

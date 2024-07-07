@@ -47,6 +47,16 @@ enum Skill {
 @immutable
 class Skills {
   const Skills([this.skillToLevel = const {}]);
+
+  factory Skills.fromJson(Map<String, dynamic> json) {
+    final skillToLevel = <Skill, double>{};
+    for (final entry in json.entries) {
+      final skill = Skill.fromString(entry.key);
+      final level = entry.value as double;
+      skillToLevel[skill] = level;
+    }
+    return Skills(skillToLevel);
+  }
   final Map<Skill, double> skillToLevel;
 
   double operator [](Skill skill) => skillToLevel[skill] ?? 0.0;
@@ -74,6 +84,10 @@ class Skills {
   @override
   String toString() {
     return 'Skills(${Skill.values.map((s) => '${s.name}: ${this[s].toStringAsFixed(1)}').join(', ')})';
+  }
+
+  Map<String, dynamic> toJson() {
+    return skillToLevel.map((key, value) => MapEntry(key.name, value));
   }
 }
 
@@ -302,7 +316,7 @@ class GameState {
     return GameState(
       inventory:
           Inventory.fromJson(json['inventory'] as Map<String, dynamic>, items),
-      skills: Skills(Map<Skill, double>.from(json['skills'] as Map)),
+      skills: Skills.fromJson(json['skills'] as Map<String, dynamic>),
       meEnergy: json['meEnergy'] as int,
       minionEnergy: json['minionEnergy'] as int,
       stats: GameStats.fromJson(json['stats'] as Map<String, dynamic>),
@@ -368,7 +382,7 @@ class GameState {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'inventory': inventory.toJson(),
-      'skills': skills.skillToLevel,
+      'skills': skills.toJson(),
       'meEnergy': meEnergy,
       'minionEnergy': minionEnergy,
       'stats': stats.toJson(),
