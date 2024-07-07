@@ -5,9 +5,8 @@
 
 ## TODO
 
-* Save state
-* Energy / Eating
 * Drag and Drop
+* Energy / Eating
 * Containers
 * More recipes
 * More items

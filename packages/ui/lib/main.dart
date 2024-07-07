@@ -60,7 +60,10 @@ class TappableItemStack extends StatelessWidget {
       return Opacity(opacity: 0.5, child: ItemStackWidget(stack: stack));
     }
     return GestureDetector(
-      child: ItemStackWidget(stack: stack),
+      child: Draggable<ItemStack>(
+        feedback: ItemStackWidget(stack: stack),
+        child: ItemStackWidget(stack: stack),
+      ),
       onTap: () => onTap.call(stack!),
     );
   }
@@ -326,6 +329,37 @@ class ErrorMessage extends StatelessWidget {
   }
 }
 
+class FeedTarget extends StatelessWidget {
+  const FeedTarget({required this.name, required this.energy, super.key});
+
+  final String name;
+  final int energy;
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<ItemStack>(
+      builder: (
+        BuildContext context,
+        List<ItemStack?> candidateData,
+        List<dynamic> rejectedData,
+      ) {
+        final highlighted = candidateData.isNotEmpty;
+        return Container(
+          width: 100,
+          height: 100,
+          color: highlighted ? Colors.green : Colors.blue,
+          child: Column(
+            children: [
+              Text(name),
+              Text('Energy: $energy'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class GameView extends StatelessWidget {
   const GameView({
     required this.bench,
@@ -382,9 +416,9 @@ class GameView extends StatelessWidget {
           ),
           Row(
             children: [
-              Text(meEnergy.toString()),
+              FeedTarget(name: 'Me', energy: meEnergy),
               const SizedBox(width: 20),
-              Text(minionEnergy.toString()),
+              FeedTarget(name: 'Minion', energy: minionEnergy),
             ],
           ),
           ElevatedButton(onPressed: onGather, child: const Text('Gather')),
@@ -666,22 +700,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('Dash Craft'),
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            ListTile(
-              title: const Text('Save'),
-              onTap: () async {
-                final json = game.toJson();
-                print(json);
-                final text = jsonEncode(json);
-                final file = File(savePath);
-                await file.writeAsString(text);
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: DebugDrawer(game: game, savePath: savePath),
       body: GameView(
         bench: bench,
         inventory: game.state.inventory,
@@ -698,6 +717,32 @@ class _MyHomePageState extends State<MyHomePage> {
         meEnergy: game.state.meEnergy,
         minionEnergy: game.state.minionEnergy,
         selectingTool: selectingTool,
+      ),
+    );
+  }
+}
+
+class DebugDrawer extends StatelessWidget {
+  const DebugDrawer({required this.game, required this.savePath, super.key});
+
+  final Game game;
+  final String savePath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          ListTile(
+            title: const Text('Save'),
+            onTap: () async {
+              final json = game.toJson();
+              final text = jsonEncode(json);
+              final file = File(savePath);
+              await file.writeAsString(text);
+            },
+          ),
+        ],
       ),
     );
   }
