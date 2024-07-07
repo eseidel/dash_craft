@@ -307,6 +307,7 @@ class Cookbook {
 @immutable
 class InputsContainer extends StackContainer {
   InputsContainer({required super.stacks}) : super(size: 3);
+  InputsContainer.fromJson(super.json, super.items) : super.fromJson();
   const InputsContainer.empty() : super.empty(size: 3);
 
   // TODO(eseidel): Preserve stack order.
@@ -322,6 +323,9 @@ class InputsContainer extends StackContainer {
 
 class ToolContainer extends StackContainer {
   ToolContainer({required ItemStack tool}) : super(size: 1, stacks: [tool]);
+
+  ToolContainer.fromJson(super.json, super.items) : super.fromJson();
+
   const ToolContainer.empty() : super.empty(size: 1);
 
   ToolType get toolType {
@@ -348,14 +352,23 @@ class CraftingBench {
     required this.inputs,
     this.tool = const ToolContainer.empty(),
   });
+  const CraftingBench.empty()
+      : inputs = const InputsContainer.empty(),
+        tool = const ToolContainer.empty();
+
+  factory CraftingBench.fromJson(Map<String, dynamic> json, ItemSet items) {
+    final inputs =
+        InputsContainer.fromJson(json['inputs'] as Map<String, dynamic>, items);
+    final tool =
+        ToolContainer.fromJson(json['tool'] as Map<String, dynamic>, items);
+    return CraftingBench(inputs: inputs, tool: tool);
+  }
+
   @visibleForTesting
   CraftingBench.fromStacks(
     List<ItemStack> stacks, {
     this.tool = const ToolContainer.empty(),
   }) : inputs = InputsContainer(stacks: stacks);
-  const CraftingBench.empty()
-      : inputs = const InputsContainer.empty(),
-        tool = const ToolContainer.empty();
 
   final InputsContainer inputs;
   final ToolContainer tool;
@@ -372,6 +385,13 @@ class CraftingBench {
       tool: tool ?? this.tool,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'inputs': inputs.toJson(),
+      'tool': tool.toJson(),
+    };
+  }
 }
 
 // Essentially an item instance.  Item is a type of item.
@@ -379,6 +399,13 @@ class CraftingBench {
 class ItemStack {
   const ItemStack({required this.type, this.count = 1, this.durability})
       : assert(count > 0, 'count must be positive');
+
+  factory ItemStack.fromJson(Map<String, dynamic> json, ItemSet items) {
+    final type = items[json['type'] as String];
+    final count = json['count'] as int;
+    final durability = json['durability'] as int?;
+    return ItemStack(type: type, count: count, durability: durability);
+  }
   final Item type;
   final int count;
   final int? durability;
@@ -401,6 +428,14 @@ class ItemStack {
       count: count ?? this.count,
       durability: durability ?? this.durability,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.name,
+      'count': count,
+      'durability': durability,
+    };
   }
 
   bool haveSpaceFor(ItemStack from) {

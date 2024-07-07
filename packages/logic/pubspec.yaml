@@ -1,7 +1,7 @@
 name: logic
 description: Core logic for a "Dawn Of Crafting" like application.
 version: 1.0.0+1
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
   sdk: ">=3.1.0 <4.0.0"
@@ -15,6 +15,10 @@ dependencies:
   yaml: ^3.1.2
 
 dev_dependencies:
+  json_diff:
+    git:
+      # The original package is no longer maintained.
+      url: https://github.com/eseidel/dart-json_diff.git
   test: ^1.16.8
   very_good_analysis: ^6.0.0
 

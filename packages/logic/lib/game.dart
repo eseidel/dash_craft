@@ -86,9 +86,6 @@ class StackContainer {
     }
   }
 
-  const StackContainer.empty({required this.size})
-      : _stacks = const <ItemStack>[];
-
   @visibleForTesting
   StackContainer.fromCounts({
     required Map<Item, int> itemCounts,
@@ -97,6 +94,24 @@ class StackContainer {
     if (_stacks.length > size) {
       throw ArgumentError('Too many stacks: $_stacks');
     }
+  }
+
+  StackContainer.fromJson(Map<String, dynamic> json, ItemSet items)
+      : this(
+          stacks: stacksFromJson(json['stacks'] as List, items),
+          size: json['size'] as int,
+        );
+
+  const StackContainer.empty({required this.size})
+      : _stacks = const <ItemStack>[];
+
+  static List<ItemStack> stacksFromJson(
+    List<dynamic> json,
+    ItemSet items,
+  ) {
+    return json
+        .map((s) => ItemStack.fromJson(s as Map<String, dynamic>, items))
+        .toList();
   }
 
   static List<ItemStack> stacksFromCounts(Map<Item, int> itemCounts) {
@@ -113,6 +128,8 @@ class StackContainer {
     }
     return stacks;
   }
+
+  List<ItemStack> get stacks => List<ItemStack>.unmodifiable(_stacks);
 
   final List<ItemStack> _stacks;
   final int size;
@@ -202,11 +219,22 @@ class StackContainer {
     }
     return count;
   }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'size': size,
+      'stacks': _stacks.map((s) => s.toJson()).toList(),
+    };
+  }
 }
 
 @immutable
 class Inventory extends StackContainer {
+  Inventory({required super.stacks}) : super(size: 25);
   const Inventory.empty() : super.empty(size: 25);
+  Inventory.fromJson(super.json, super.items) : super.fromJson();
+
+  // TODO(eseidel): Remove this, it does not preserve stack order.
   Inventory.fromCounts(Map<Item, int> itemCounts)
       : super.fromCounts(itemCounts: itemCounts, size: 25);
 
@@ -229,6 +257,13 @@ class Inventory extends StackContainer {
 
 class GameStats {
   const GameStats({this.clicks = 0, this.timeInMilliseconds = 0});
+
+  factory GameStats.fromJson(Map<String, dynamic> json) {
+    return GameStats(
+      clicks: json['clicks'] as int,
+      timeInMilliseconds: json['timeInMilliseconds'] as int,
+    );
+  }
   final int clicks;
   final int timeInMilliseconds;
 
@@ -237,6 +272,13 @@ class GameStats {
       clicks: clicks + this.clicks,
       timeInMilliseconds: timeInMilliseconds + this.timeInMilliseconds,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'clicks': clicks,
+      'timeInMilliseconds': timeInMilliseconds,
+    };
   }
 
   @override
@@ -255,6 +297,19 @@ class GameState {
     required this.stats,
     required this.bench,
   });
+
+  factory GameState.fromJson(Map<String, dynamic> json, ItemSet items) {
+    return GameState(
+      inventory:
+          Inventory.fromJson(json['inventory'] as Map<String, dynamic>, items),
+      skills: Skills(Map<Skill, double>.from(json['skills'] as Map)),
+      meEnergy: json['meEnergy'] as int,
+      minionEnergy: json['minionEnergy'] as int,
+      stats: GameStats.fromJson(json['stats'] as Map<String, dynamic>),
+      bench:
+          CraftingBench.fromJson(json['bench'] as Map<String, dynamic>, items),
+    );
+  }
 
   const GameState.empty()
       : inventory = const Inventory.empty(),
@@ -309,6 +364,17 @@ class GameState {
       meEnergy: meEnergy + result.meEnergyChange,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'inventory': inventory.toJson(),
+      'skills': skills.skillToLevel,
+      'meEnergy': meEnergy,
+      'minionEnergy': minionEnergy,
+      'stats': stats.toJson(),
+      'bench': bench.toJson(),
+    };
+  }
 }
 
 // Mutable, handles rules
@@ -316,6 +382,20 @@ class Game {
   Game({int? seed})
       : _random = Random(seed),
         state = const GameState.empty();
+
+  factory Game.fromJson(Map<String, dynamic> json, ItemSet items) {
+    // TODO(eseidel): Handle seed
+    return Game()
+      ..state =
+          GameState.fromJson(json['state'] as Map<String, dynamic>, items);
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'state': state.toJson(),
+    };
+  }
+
   final Random _random;
   GameState state;
 

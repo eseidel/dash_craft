@@ -5,7 +5,7 @@
 
 ## TODO
 
-* Tools (transfering in/out of bench)
+* Save state
 * Energy / Eating
 * Drag and Drop
 * Containers

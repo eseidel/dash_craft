@@ -15,7 +15,7 @@ enum ToolType {
   }
 }
 
-class Item {
+class Item implements Comparable<Item> {
   const Item({required this.name, this.energy, this.tool, this.toolLevel});
 
   factory Item.fromYaml(YamlMap yaml) {
@@ -35,6 +35,9 @@ class Item {
   final int? toolLevel;
 
   bool isTool() => tool != null;
+
+  @override
+  int compareTo(Item other) => name.compareTo(other.name);
 
   @override
   String toString() => name;

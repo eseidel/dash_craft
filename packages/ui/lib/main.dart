@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logic/game.dart';
 import 'package:logic/logic.dart';
 import 'package:logic/rules.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:yaml/yaml.dart';
 
 const inputSize = 3;
@@ -413,11 +418,13 @@ class _MyHomePageState extends State<MyHomePage> {
   DOC? _rules;
   String? errorMessage;
   String? statusMessage;
-  Game game = Game();
+  Game? _game;
+  late String savePath;
 
-  bool isLoaded() => _rules != null;
+  bool isLoaded() => _rules != null && _game != null;
   Rules get rules => _rules!;
   DOC get doc => _rules!;
+  Game get game => _game!;
 
   // Does this need to be a state machine (enum)?
   bool selectingTool = false;
@@ -438,9 +445,28 @@ class _MyHomePageState extends State<MyHomePage> {
     final recipes = RecipeSet.fromYaml(await loadYamlMap('recipes'), items);
     final tasks = TaskSet.fromYaml(await loadYamlMap('tasks'), items);
     final rules = DOC(items: items, recipes: recipes, tasks: tasks);
+    _rules = rules;
+    final game = await loadGame(rules);
     setState(() {
-      _rules = rules;
+      _game = game;
     });
+  }
+
+  Future<String> getSavePath() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return path.join(directory.path, 'game.json');
+  }
+
+  Future<Game> loadGame(Rules rules) async {
+    final savePath = await getSavePath();
+    final file = File(savePath);
+    if (!file.existsSync()) {
+      print('No save file found at $savePath, starting new game.');
+      return Game();
+    }
+    final text = await file.readAsString();
+    final json = jsonDecode(text);
+    return Game.fromJson(json as Map<String, dynamic>, rules.items);
   }
 
   void onGather() {
@@ -637,6 +663,25 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     final bench = game.state.bench;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dash Craft'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            ListTile(
+              title: const Text('Save'),
+              onTap: () async {
+                final json = game.toJson();
+                print(json);
+                final text = jsonEncode(json);
+                final file = File(savePath);
+                await file.writeAsString(text);
+              },
+            ),
+          ],
+        ),
+      ),
       body: GameView(
         bench: bench,
         inventory: game.state.inventory,
