@@ -59,9 +59,27 @@ class TappableItemStack extends StatelessWidget {
     if (disabled) {
       return Opacity(opacity: 0.5, child: ItemStackWidget(stack: stack));
     }
+    final energy = stack?.energy;
+    final energyColor = energy != null
+        ? energy > 0
+            ? Colors.green
+            : Colors.red
+        : null;
     return GestureDetector(
       child: Draggable<ItemStack>(
-        feedback: ItemStackWidget(stack: stack),
+        feedback: DefaultTextStyle(
+          style: const TextStyle(color: Colors.white),
+          child: Column(
+            children: [
+              if (energy != null)
+                Text(
+                  '+${stack?.energy} energy',
+                  style: TextStyle(color: energyColor),
+                ),
+              ItemStackWidget(stack: stack),
+            ],
+          ),
+        ),
         child: ItemStackWidget(stack: stack),
       ),
       onTap: () => onTap.call(stack!),
